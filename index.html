@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<!-- ふたりの休み合わせカレンダー 完全版 v1.0.0（2026-10-16）　余白の実験室 -->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#EEF1E8">
+<title>ふたりの休み合わせカレンダー 完全版</title>
+<meta name="description" content="交替勤務・土日休み・不規則なシフトを重ねて、ふたり（3人まで）全員が休みの日を出す完全版です。">
+<meta property="og:title" content="ふたりの休み合わせカレンダー 完全版">
+<meta property="og:description" content="交替勤務と土日休み。ふたりとも休みの日が分かるカレンダー。">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://paz67416.github.io/futari-yasumi/og.png">
+<meta property="og:site_name" content="余白の実験室">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="apple-touch-icon" href="https://paz67416.github.io/futari-yasumi/apple-touch-icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23EEF1E8'/%3E%3Crect x='10' y='10' width='18' height='18' rx='4' fill='%232A2E27'/%3E%3Crect x='36' y='10' width='18' height='18' rx='4' fill='%238B5A6B'/%3E%3Crect x='10' y='36' width='18' height='18' rx='4' fill='%234F7163'/%3E%3Crect x='36' y='36' width='18' height='18' rx='4' fill='%238B5A6B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1E8;
+    --paper-soft:#F6F8F1;
+    --ink:#2A2E27;
+    --ink-soft:#5B6157;
+    --line:#D6D9CC;
+    --accent:#8B5A6B;
+    --accent-soft:#F1E3E8;
+    --accent2:#4F7163;
+    --accent2-dark:#3C5A4F;
+    --red:#B4483F;
+    --blue:#3F6C99;
+    --radius:18px;
+    --shadow:0 6px 24px rgba(42,46,39,0.08);
+    --mincho:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho','Noto Serif CJK JP',serif;
+    --gothic:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic','Noto Sans CJK JP',Meiryo,sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--gothic);
+    padding:24px 16px 48px;
+    line-height:1.7;
+    -webkit-text-size-adjust:100%;
+  }
+
+  .app{width:100%;max-width:460px;margin:0 auto;}
+  .app.year-wide{max-width:780px;}
+
+  .motif{display:grid;grid-template-columns:repeat(7,22px);gap:5px;margin:4px 0 22px;}
+  .motif i{width:22px;height:22px;border-radius:6px;background:var(--ink);display:block;}
+  .motif i.r{background:transparent;border:2px solid var(--ink);}
+  .motif i.b{background:var(--accent);}
+
+  .eyebrow{font-size:13px;letter-spacing:0.08em;color:var(--ink-soft);margin:0 0 6px;}
+  h1{font-family:var(--mincho);font-weight:700;font-size:28px;line-height:1.45;margin:0 0 16px;letter-spacing:0.01em;}
+  .lead{font-size:15px;color:var(--ink-soft);margin:0 0 24px;}
+
+  .card{
+    background:var(--paper-soft);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 16px;
+    box-shadow:var(--shadow);
+    margin-bottom:16px;
+  }
+  .card h2{font-family:var(--mincho);font-size:18px;font-weight:700;margin:0 0 12px;line-height:1.5;}
+  .card h3{font-family:var(--mincho);font-size:15.5px;font-weight:700;margin:18px 0 8px;line-height:1.5;}
+
+  .hint{font-size:13px;color:var(--ink-soft);margin:0 0 10px;}
+  .mini{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;}
+
+  label.field{display:block;font-size:13px;color:var(--ink-soft);margin:0 0 12px;}
+  label.field span{display:block;margin-bottom:4px;}
+  select,input[type="date"],input[type="text"]{
+    width:100%;
+    font-family:inherit;
+    font-size:16px;
+    color:var(--ink);
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:11px 12px;
+    min-height:48px;
+  }
+  select:focus-visible,input:focus-visible,button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+  [hidden]{display:none !important;}
+
+  button{font-family:inherit;cursor:pointer;color:var(--ink);}
+
+  .person h2 .tag{display:inline-block;min-width:1.6em;}
+  .strip{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 4px;}
+  .chip{
+    width:36px;height:44px;border-radius:9px;border:1.5px solid var(--line);
+    font-family:var(--mincho);font-weight:700;font-size:15px;line-height:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    padding:0;position:relative;
+  }
+  .chip.two{font-size:12px;}
+  .chip small{font-family:var(--gothic);font-weight:500;font-size:9px;opacity:.75;}
+  .chip.sel{box-shadow:0 0 0 2.5px var(--ink);border-color:var(--ink);}
+  .anchor-line{font-size:14px;margin:10px 0 0;}
+  .anchor-line b{font-weight:700;}
+  .w-info{font-size:14px;margin:0 0 4px;}
+  label.check{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0 2px;min-height:40px;}
+  label.check input{width:20px;height:20px;accent-color:var(--accent2);flex:none;}
+  .notice{background:#fff;border:1.5px solid var(--accent);border-radius:14px;padding:12px 14px;font-size:13.5px;margin:0 0 16px;}
+  details{border-top:1px solid var(--line);margin-top:14px;padding-top:4px;}
+  details summary{cursor:pointer;font-size:14px;font-weight:700;padding:10px 0;list-style:none;display:flex;align-items:center;gap:8px;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:"＋";color:var(--accent2);font-weight:700;}
+  details[open] > summary::before{content:"－";}
+  .pal{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;}
+  .pal button{border:1.5px solid var(--line);border-radius:999px;padding:9px 13px;font-size:13.5px;font-weight:700;min-height:42px;}
+  .pal button.erase{background:#fff;font-weight:500;}
+  .pal button.sel,.pal button[aria-pressed="true"]{box-shadow:0 0 0 2.5px var(--ink);border-color:var(--ink);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  @media (max-width:300px){ .row2{grid-template-columns:1fr;} }
+  .btn-small{background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:10px 12px;font-size:13.5px;font-weight:500;min-height:44px;}
+  .btn-small:hover{border-color:var(--ink);}
+  .wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:4px 0 8px;}
+  .wk button{border:1.5px solid var(--line);border-radius:10px;background:#fff;min-height:44px;font-size:14px;font-weight:700;padding:0;}
+  .wk button.sun{color:var(--red);} .wk button.sat{color:var(--blue);}
+  .wk button[aria-pressed="true"]{background:var(--ink);color:var(--paper-soft);border-color:var(--ink);}
+  .p-foot{display:flex;justify-content:flex-end;margin-top:12px;}
+
+  .status{
+    background:var(--ink);color:var(--paper-soft);border-radius:var(--radius);
+    padding:16px 18px;margin-bottom:16px;font-size:15px;line-height:1.75;
+  }
+  .status b{font-family:var(--mincho);font-size:17px;}
+  .status .sub{display:block;font-size:13.5px;opacity:.9;margin-top:4px;}
+  .status .sub b{font-size:15px;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px 10px;margin:0 0 4px;font-size:12.5px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .legend i{width:16px;height:16px;border-radius:5px;border:1px solid var(--line);display:inline-block;}
+  .legend i.both{background:var(--accent);border-color:var(--accent);}
+  .band-key{font-size:12.5px;color:var(--ink-soft);margin:2px 0 6px;}
+
+  .month-title{font-family:var(--mincho);font-weight:700;font-size:21px;margin:18px 0 8px;}
+  .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+  .dow{display:block;font-size:11px;text-align:center;color:var(--ink-soft);padding-bottom:2px;}
+  .dow.sun{color:var(--red);} .dow.sat{color:var(--blue);}
+  .cell{
+    min-height:60px;border-radius:9px;border:1px solid var(--line);background:#fff;position:relative;
+    display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;
+    padding:2px 2px 3px;min-width:0;font:inherit;margin:0;color:var(--ink);text-align:center;
+  }
+  .cal.p3 .cell{min-height:76px;}
+  .cell.out{visibility:hidden;}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  .cell .d{display:block;font-size:11px;line-height:1.3;color:var(--ink-soft);}
+  .cell.sat .d{color:var(--blue);}
+  .cell.sun .d,.cell.hol .d{color:var(--red);font-weight:700;}
+  .cell .b{display:block;border-radius:4px;font-family:var(--mincho);font-weight:700;font-size:12.5px;line-height:18px;white-space:nowrap;overflow:hidden;}
+  .cell .b.two{font-size:10px;}
+  .cell .b.rest{box-shadow:inset 0 0 0 1px var(--line);}
+  .cell .b.unk{color:#9AA094;background:transparent;font-weight:500;}
+  .cell.both{background:var(--accent);border-color:var(--accent);}
+  .cell.both .d{color:#fff;}
+  .cell.both .b{background:transparent !important;color:#fff !important;box-shadow:none;}
+  .cell.today{box-shadow:0 0 0 2.5px var(--ink);}
+  .cell.hol::after{content:"祝";position:absolute;top:1px;right:3px;font-size:8px;color:var(--red);font-weight:700;}
+  .cell.both.hol::after{color:#fff;}
+  @media (max-width:359px){ .cell.hol::after{display:none;} }
+  .month-note{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;}
+  .month-stat{font-family:var(--mincho);font-weight:700;font-size:16px;margin:6px 0 0;}
+  .month-list{font-size:13px;color:var(--ink-soft);margin:2px 0 0;}
+  button.cell{cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  button.cell:hover{border-color:var(--ink);}
+  .cell .b.ovr{text-decoration:underline;text-underline-offset:2px;}
+  .cell.both .b.ovr{text-decoration:underline;}
+
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:14px;background:#fff;}
+  .tabs button{border:none;background:transparent;padding:10px 0;font-size:14px;font-weight:700;min-height:44px;border-radius:999px;}
+  .tabs button:focus-visible{outline-offset:-4px;}
+  .tabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper-soft);}
+  .nav{display:grid;grid-template-columns:48px 1fr 48px;align-items:center;margin-bottom:12px;min-height:60px;}
+  .nav > button{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:20px;line-height:1;}
+  .nav > button:hover{border-color:var(--ink);}
+  .nav > button:disabled{opacity:.35;cursor:default;border-color:var(--line);}
+  .nav-label{text-align:center;font-family:var(--mincho);font-weight:700;font-size:21px;line-height:1.4;}
+  .nav-today{display:block;margin:0 auto;background:transparent;border:none;font-size:12.5px;color:var(--accent2-dark);text-decoration:underline;padding:4px 12px;min-height:30px;}
+  #brushBox{margin:10px 0 14px;border-bottom:1px solid var(--line);padding-bottom:4px;}
+  #brushBox[open]{padding-bottom:12px;}
+  .who{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;}
+  .who button{border:1.5px solid var(--line);border-radius:999px;background:#fff;padding:8px 14px;font-size:13.5px;font-weight:700;min-height:42px;}
+  .who button[aria-pressed="true"]{background:var(--ink);color:var(--paper-soft);border-color:var(--ink);}
+
+  .year-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;margin-top:14px;}
+  .app.year-wide .year-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .ym{background:transparent;border:none;padding:0;text-align:left;display:block;width:100%;align-self:start;}
+  .ym-title{font-family:var(--mincho);font-weight:700;font-size:15px;margin:0 0 4px;display:block;}
+  .ym-count{font-family:var(--gothic);font-weight:500;font-size:11.5px;color:var(--accent);margin-left:6px;}
+  .cal.mini{gap:2px;}
+  .cal.mini .dow{font-size:8.5px;padding:0;}
+  .cal.mini .cell{min-height:0;aspect-ratio:1/1;border-radius:5px;padding:0;justify-content:center;border-color:#E2E5DA;}
+  .cal.mini .cell .d{font-size:9.5px;}
+  .cal.mini .cell .b{display:none;}
+  .cal.mini .cell.hol::after{display:none;}
+  .cal.mini .cell.today{box-shadow:0 0 0 2px var(--ink);}
+
+  .stats{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;font-size:14px;}
+  .stats .big{font-family:var(--mincho);font-weight:700;font-size:17px;}
+  .stats table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+  .stats th,.stats td{border-bottom:1px solid var(--line);padding:5px 4px;text-align:right;font-weight:400;font-variant-numeric:tabular-nums;}
+  .stats th:first-child,.stats td:first-child{text-align:left;}
+  .stats thead th{color:var(--ink-soft);font-size:11.5px;}
+
+  .ov-block{font-size:14px;margin:0 0 12px;}
+  .ov-block b{font-family:var(--mincho);font-size:16px;}
+  .ov-list{display:block;font-size:13px;color:var(--ink-soft);margin:4px 0 0;line-height:1.9;}
+  .pl-list{list-style:none;margin:0;padding:0;}
+  .pl-list li{border-top:1px solid var(--line);padding:10px 0;font-size:14px;}
+  .pl-list li:first-child{border-top:none;padding-top:2px;}
+  .pl-list .len{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;font-size:12px;font-weight:700;padding:1px 9px;margin-right:6px;}
+  .pl-list .btn-small{margin-top:6px;min-height:38px;padding:6px 12px;font-size:12.5px;}
+
+  .btn-primary{
+    display:block;width:100%;background:var(--ink);color:var(--paper-soft);border:none;border-radius:999px;
+    padding:15px 20px;font-size:15px;font-weight:700;letter-spacing:0.02em;margin-top:8px;text-align:center;text-decoration:none;
+  }
+  .btn-primary:hover{background:var(--accent2-dark);}
+  .btn-secondary{
+    display:block;width:100%;background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:999px;
+    padding:13px 16px;font-size:14px;font-weight:500;margin-top:14px;text-align:center;
+  }
+  .btn-secondary:hover{border-color:var(--ink);}
+  .feedback{font-size:12.5px;color:var(--accent2-dark);text-align:center;margin:8px 0 0;min-height:18px;}
+  .ics-help{font-size:12.5px;color:var(--ink-soft);background:var(--paper);border-radius:12px;padding:12px 14px;margin:12px 0 0;}
+  .ics-help p{margin:0 0 6px;} .ics-help p:last-child{margin:0;}
+  .overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(42,46,39,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;}
+  .sheet{background:var(--paper-soft);border-radius:var(--radius);padding:16px;max-width:440px;width:100%;max-height:92vh;overflow:auto;}
+  .sheet img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;background:#fff;}
+  .sheet p{font-size:13px;color:var(--ink-soft);margin:10px 0 0;}
+  .toast{
+    position:fixed;left:16px;right:16px;bottom:16px;max-width:428px;margin:0 auto;z-index:9;
+    background:var(--ink);color:var(--paper-soft);border-radius:14px;padding:10px 12px 10px 16px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13.5px;line-height:1.5;
+    box-shadow:0 8px 28px rgba(42,46,39,.3);
+  }
+  .toast button{flex:none;background:var(--paper-soft);color:var(--ink);border:none;border-radius:999px;padding:9px 14px;font-size:13.5px;font-weight:700;min-height:40px;}
+
+  footer{text-align:left;font-size:12px;color:var(--ink-soft);margin-top:20px;}
+  footer p{margin:0 0 6px;}
+  footer .lab{text-align:center;margin-top:14px;letter-spacing:0.08em;}
+
+  @media (prefers-reduced-motion:no-preference){
+    .card,.status{animation:fadeUp .4s ease both;}
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- 印刷（A4たて・1枚に収める） ---------- */
+  #printSheet{display:none;}
+  @media print{
+    @page{size:A4 portrait;margin:10mm;}
+    html,body{background:#fff;padding:0 !important;margin:0;}
+    .app,.overlay,.toast{display:none !important;}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    #printSheet{display:block;color:#111;font-family:var(--gothic);line-height:1.3;}
+    .ps-sheet{height:275mm;display:flex;flex-direction:column;overflow:hidden;}
+    .ps-head{flex:none;margin-bottom:3mm;}
+    .ps-title{font-family:var(--mincho);font-weight:700;font-size:15pt;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .ps-row{display:flex;justify-content:space-between;align-items:flex-start;gap:6mm;margin-top:1mm;}
+    .ps-sub{flex:1 1 auto;min-width:0;font-size:8pt;color:#444;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;}
+    .ps-legend{flex:0 1 auto;max-width:50%;display:flex;flex-wrap:wrap;gap:1mm 3mm;font-size:7.5pt;justify-content:flex-end;}
+    .ps-legend span{display:inline-flex;align-items:center;gap:1mm;white-space:nowrap;}
+    .ps-legend i{width:3.2mm;height:3.2mm;border-radius:.8mm;border:.2mm solid #999;display:inline-block;}
+    .ps-legend i.both{background:#8B5A6B;border-color:#8B5A6B;}
+    .ps-year{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,minmax(0,1fr));gap:3mm 5mm;}
+    .ps-m{display:flex;flex-direction:column;min-height:0;}
+    .ps-m h3{flex:none;font-family:var(--mincho);font-weight:700;font-size:11pt;margin:0 0 .8mm;}
+    .ps-m h3 small{font-family:var(--gothic);font-weight:500;font-size:7pt;color:#8B5A6B;margin-left:2mm;}
+    .ps-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.6mm;}
+    .ps-year .ps-grid{flex:1 1 auto;min-height:0;grid-template-rows:3.2mm repeat(6,minmax(0,1fr));}
+    .ps-dow{font-size:6.5pt;text-align:center;color:#555;height:3.2mm;}
+    .ps-dow.sun{color:#B4483F;} .ps-dow.sat{color:#3F6C99;}
+    .ps-c{min-height:0;border-radius:1.1mm;border:.2mm solid #c9c9c9;background:#fff;position:relative;display:flex;align-items:center;justify-content:center;font-size:7.5pt;line-height:1;overflow:hidden;color:#333;}
+    .ps-c.out{visibility:hidden;}
+    .ps-c.sat{color:#3F6C99;} .ps-c.sun,.ps-c.hol{color:#B4483F;font-weight:700;}
+    .ps-c.both{background:#8B5A6B;border-color:#8B5A6B;color:#fff;font-weight:700;}
+    .ps-foot{flex:none;font-size:7.5pt;color:#444;margin-top:3mm;display:flex;justify-content:space-between;gap:6mm;white-space:nowrap;}
+    .ps-foot span{overflow:hidden;text-overflow:ellipsis;}
+    .ps-foot span:first-child{flex:none;max-width:62%;}
+
+    .ps-month .ps-grid{flex:1 1 auto;min-height:0;gap:1.2mm;grid-template-rows:6mm;grid-auto-rows:minmax(0,1fr);}
+    .ps-month .ps-dow{font-size:10pt;height:6mm;}
+    .ps-month .ps-c{border-radius:2mm;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:.8mm;padding:1mm 1.2mm;font-size:10pt;}
+    .ps-month .ps-c .d{display:block;text-align:left;font-size:11pt;margin-bottom:.3mm;}
+    .ps-month .ps-c .h{position:absolute;right:1.5mm;top:1.3mm;font-size:6.5pt;font-weight:500;}
+    .ps-month .ps-c .b{display:block;border-radius:1mm;text-align:center;font-family:var(--mincho);font-weight:700;font-size:9.5pt;line-height:1.5;color:#2A2E27;}
+    .ps-month .ps-c .b small{font-family:var(--gothic);font-weight:500;font-size:6pt;margin-right:1mm;opacity:.8;}
+    .ps-month .ps-c.both .b{background:transparent !important;color:#fff !important;}
+  }
+</style>
+</head>
+<body>
+<noscript><p style="max-width:460px;margin:0 auto 16px;">このページは JavaScript を使って動きます。ブラウザの設定で JavaScript を有効にしてください。</p></noscript>
+<div class="app" id="app">
+
+  <header>
+    <div class="motif" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="r"></i><i class="b"></i><i></i><i class="r"></i><i></i><i></i><i></i><i></i><i class="b"></i><i class="r"></i></div>
+    <p class="eyebrow">余白の実験室　完全版</p>
+    <h1>ふたりの<br>休み合わせカレンダー</h1>
+    <p class="lead">交替勤務と土日休み、4勤2休どうし。ふたりの勤務を選ぶと、ふたりとも休みの日がカレンダーで分かります。</p>
+  </header>
+
+  <p class="notice" id="hashNote" hidden>開いたURLの設定を一部読み取れませんでした。勤務の形と基準日が合っているか、確かめてください。</p>
+
+  <div id="people"></div>
+
+  <section class="card" id="moreBox">
+    <button type="button" class="btn-secondary" id="addBtn" style="margin-top:0;">3人目を足す（家族・友だちなど）</button>
+    <label class="check" style="margin-top:10px;"><input type="checkbox" id="akeOff">夜勤明けの日も休みとして数える</label>
+    <p class="mini" style="margin-top:0;">「明け」は、並びを自分で作るときやシフト表で入れたときに出る勤務で、ふだんは休みに数えません。よくある形（4勤2休・2交替など）では、夜勤のあとの日は、朝まで勤務があっても「休み」として数えています。</p>
+  </section>
+
+  <section class="status" id="status" aria-live="polite"></section>
+
+  <section class="card" id="viewer">
+    <div class="tabs" role="group" aria-label="表示の切り替え">
+      <button type="button" data-view="month" aria-pressed="true">月で見る</button>
+      <button type="button" data-view="year" aria-pressed="false">年で見る</button>
+    </div>
+    <div class="nav">
+      <button type="button" id="prevBtn" aria-label="前の月">‹</button>
+      <div><div class="nav-label" id="navLabel"></div><button type="button" class="nav-today" id="todayBtn">今月に戻る</button></div>
+      <button type="button" id="nextBtn" aria-label="次の月">›</button>
+    </div>
+    <div class="legend" id="legend"></div>
+    <p class="band-key" id="bandKey"></p>
+    <details id="brushBox">
+      <summary>その日だけ変える（有給・休日出勤・シフト表）</summary>
+      <p class="hint" style="margin-bottom:6px;">だれの勤務を変えるか</p>
+      <div class="who" id="brushWho"></div>
+      <div class="pal" id="brushes"></div>
+      <p class="hint" id="brushHint" style="margin-bottom:6px;"></p>
+      <p class="mini" id="overCount" style="margin:0 0 8px;"></p>
+      <button type="button" class="btn-small" id="overClear" style="width:100%;">この人の変えた日をすべて元に戻す</button>
+    </details>
+    <div id="calArea"></div>
+    <p class="month-note" id="holList"></p>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <section class="card" id="plBox">
+    <h2 id="plTitle" tabindex="-1">有給で、ふたりの連休をつくる</h2>
+    <p class="hint" id="plHint"></p>
+    <label class="field"><span>使う有給の合計</span>
+      <select id="plB"><option value="1">1日まで</option><option value="2">2日まで</option><option value="3">3日まで</option></select>
+    </label>
+    <div id="plBody"></div>
+  </section>
+
+  <section class="card" id="overlap">
+    <h2 id="ovTitle">ふたりとも休みの日</h2>
+    <div id="ovBody"></div>
+  </section>
+
+  <section class="card" id="export">
+    <h2>印刷する・保存する・送る</h2>
+    <p class="hint" id="exportScope"></p>
+    <button type="button" class="btn-primary" id="printYearBtn">年間カレンダーを印刷する（A4・1枚）</button>
+    <button type="button" class="btn-secondary" id="printMonthBtn">この月を印刷する（勤務入り）</button>
+    <button type="button" class="btn-secondary" id="imgMonthBtn">この月を画像で保存する</button>
+    <button type="button" class="btn-secondary" id="copyMonthBtn">この月の休みと勤務を文字でコピーする</button>
+    <button type="button" class="btn-secondary" id="copyUrlBtn">この設定のURLをコピーする</button>
+    <p class="feedback" id="feedback" aria-live="polite"></p>
+    <p class="mini" id="saveNote"></p>
+    <p class="mini">URLを相手に送ると、相手のスマホでも同じ設定で開けます（相手が設定を変えても、こちらには反映されません）。</p>
+
+    <details id="icsBox">
+      <summary>スマホのカレンダーに入れる（.ics）</summary>
+      <label class="field"><span>入れる期間</span>
+        <select id="icsRange">
+          <option value="next">今日から来年の年末まで</option>
+          <option value="this">今日から今年の年末まで</option>
+          <option value="year">表示中の年の1月1日〜12月31日</option>
+        </select>
+      </label>
+      <button type="button" class="btn-primary" id="icsBtn">カレンダー用ファイルを作る</button>
+      <p class="feedback" id="icsFeedback" aria-live="polite"></p>
+      <div class="ics-help">
+        <p id="icsHelp1">ふたりとも休みの日が、終日の予定として入ります（続いている日は、まとめて1件）。それぞれの勤務は入りません。</p>
+        <p><b>iPhone</b>：ダウンロードしたファイルを開く →「すべてを追加」→ 入れるカレンダーを選ぶ。</p>
+        <p><b>Android</b>：ダウンロードしたファイルを開くと、Google カレンダーに取り込む確認が出ることがあります（アプリが新しい場合）。出ないときは、下のパソコンの手順で入れます。</p>
+        <p><b>パソコン</b>：ブラウザで Google カレンダーを開き、設定 →「インポート / エクスポート」でファイルを選ぶ。</p>
+        <p>先に「ふたりの休み」などの専用カレンダーを作ってそこへ入れると、あとで丸ごと消せます。勤務や期間を変えて入れ直すときは、前に入れた分を先に消してください。</p>
+        <p>ダウンロードが始まらないときは、Safari や Chrome でこのページを開き直してください（LINE などのアプリの中の画面では保存できないことがあります）。画面の文言は機種やアプリの版で少し違います。</p>
+      </div>
+    </details>
+  </section>
+
+
+  <footer>
+    <p>※選んだ勤務の形から作る目安のカレンダーです。実際の勤務は、会社のカレンダーやシフト表を優先してください。</p>
+    <p>※夜勤は、出勤する日（勤務が始まる日）に入れています。</p>
+    <p>※祝日を表示できるのは、内閣府が公表している2026年・2027年分です。</p>
+    <p>※入力した内容はどこにも送信されません。設定はこのページのURL（# より後ろ）に入るだけです。設定を変えるとURLも変わるので、変えたあとはURLをコピーし直すか、ブックマーク（ホーム画面のアイコン）を登録し直してください。</p>
+    <p class="lab">余白の実験室</p>
+  </footer>
+</div>
+
+<div class="overlay" id="overlayBox" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="画像の保存">
+    <img id="ovImg" alt="作成したカレンダーの画像">
+    <p>スマホでは、画像を長押しすると「写真に保存」できます。</p>
+    <a class="btn-primary" id="ovDl" href="#" download="futari-yasumi.png">画像をダウンロードする</a>
+    <button type="button" class="btn-secondary" id="ovClose">閉じる</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span id="toastMsg"></span>
+  <button type="button" id="toastBtn" hidden>取り消す</button>
+</div>
+
+<div id="printSheet" aria-hidden="true"></div>
+
+<script>
+(() => {
+  'use strict';
+
+
+  /* ---------- データ ---------- */
+  // 祝日：内閣府「国民の祝日について」に載っている2026年・2027年分（2026年10月6日に確認）。
+  // 内閣府の表で「休日」となっている日は、振替休日・国民の休日と表記している。
+  // 次の年の分は毎年2月ごろに公表される。足すときは HOLIDAY_YEARS にも年を足す。
+  const HOLIDAYS = {
+    '2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日','2026-02-23':'天皇誕生日',
+    '2026-03-20':'春分の日','2026-04-29':'昭和の日','2026-05-03':'憲法記念日','2026-05-04':'みどりの日',
+    '2026-05-05':'こどもの日','2026-05-06':'振替休日','2026-07-20':'海の日','2026-08-11':'山の日',
+    '2026-09-21':'敬老の日','2026-09-22':'国民の休日','2026-09-23':'秋分の日','2026-10-12':'スポーツの日',
+    '2026-11-03':'文化の日','2026-11-23':'勤労感謝の日',
+    '2027-01-01':'元日','2027-01-11':'成人の日','2027-02-11':'建国記念の日','2027-02-23':'天皇誕生日',
+    '2027-03-21':'春分の日','2027-03-22':'振替休日','2027-04-29':'昭和の日','2027-05-03':'憲法記念日',
+    '2027-05-04':'みどりの日','2027-05-05':'こどもの日','2027-07-19':'海の日','2027-08-11':'山の日',
+    '2027-09-20':'敬老の日','2027-09-23':'秋分の日','2027-10-11':'スポーツの日','2027-11-03':'文化の日',
+    '2027-11-23':'勤労感謝の日'
+  };
+  const HOLIDAY_YEARS = [2026, 2027];
+  const NO_HOLIDAY_TEXT = '祝日を表示できるのは2026年・2027年だけです。';
+  const DOW = ['日','月','火','水','木','金','土'];
+  const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];   // 休みの曜日を文で書くときの順（月〜日）
+  const MIN_YEAR = 1971, MAX_YEAR = 2099;
+  const HORIZON = 400;    // 「次に〜の日」を探す日数の上限
+  const C_RED = '#B4483F', C_INK = '#2A2E27';
+  const MAX_PEOPLE = 3;
+  const MAX_CYCLE = 60;   // 並びの長さの上限（日）
+  const MAX_OVER = 1000;  // 1人あたり「その日だけ変える」（シフト表を含む）の上限（日）
+  const PL_DAYS = 183;    // 有給の案を探す日数（今日から）
+  const APP_TITLE = 'ふたりの休み合わせカレンダー 完全版';
+  const C_NUM = '#5B6157', C_BLUE = '#3F6C99';
+
+  // 勤務の種類。kind：work＝出勤、ake＝夜勤明け、rest＝休み、paid＝有給（休みとして数える）
+  const TYPE_LIST = [
+    {id:'d', label:'日',  name:'日勤', bg:'#F2DFC4', kind:'work'},
+    {id:'n', label:'夜',  name:'夜勤', bg:'#D3DDE9', kind:'work'},
+    {id:'1', label:'1直', name:'1直',  bg:'#F3E8B5', kind:'work'},
+    {id:'2', label:'2直', name:'2直',  bg:'#D5E6DA', kind:'work'},
+    {id:'3', label:'3直', name:'3直',  bg:'#E6D6DE', kind:'work'},
+    {id:'k', label:'出',  name:'出勤', bg:'#E4E1D3', kind:'work'},
+    {id:'a', label:'明',  name:'明け', bg:'#DCE8EE', kind:'ake'},
+    {id:'r', label:'休',  name:'休み', bg:'#FFFFFF', kind:'rest'},
+    {id:'y', label:'有',  name:'有給', bg:'#E3F0D2', kind:'paid'}
+  ];
+
+  // よくある形。week＝曜日で休みが決まる（mask は日曜から土曜の7文字。1が休み）、cycle＝並びのくり返し
+  const PRESETS = [
+    {key:'sdh', name:'土日祝休み', mode:'week', mask:'1000001', hol:true},
+    {key:'sd',  name:'土日休み（祝日は出勤）', mode:'week', mask:'1000001', hol:false},
+    {key:'dh',  name:'日曜・祝日休み', mode:'week', mask:'1000000', hol:true},
+    {key:'42d', name:'4勤2休（日勤のみ）', mode:'cycle', cycle:'ddddrr'},
+    {key:'42n', name:'4勤2休・2交替', mode:'cycle', cycle:'ddddrrnnnnrr'},
+    {key:'423', name:'4勤2休・3交替', mode:'cycle', cycle:'1111rr2222rr3333rr'},
+    {key:'33d', name:'3勤3休（日勤のみ）', mode:'cycle', cycle:'dddrrr'},
+    {key:'33n', name:'3勤3休・2交替', mode:'cycle', cycle:'dddrrrnnnrrr'},
+    {key:'52n', name:'5勤2休・2交替（週替わり）', mode:'cycle', cycle:'dddddrrnnnnnrr'},
+    {key:'22d', name:'2勤2休（日勤のみ）', mode:'cycle', cycle:'ddrr'},
+    {key:'22n', name:'2勤2休・2交替', mode:'cycle', cycle:'ddrrnnrr'},
+    {key:'43',  name:'4直3交替（2日ずつ）', mode:'cycle', cycle:'112233rr'}
+  ];
+  const presetOf = key => PRESETS.filter(x => x.key === key)[0] || null;
+
+  /* ---------- 日付の道具（1970-01-01 からの通し日数で扱う） ---------- */
+  const pad = n => (n < 10 ? '0' : '') + n;
+  const mod = (a, b) => ((a % b) + b) % b;
+  const dn = (y, m, d) => Math.round(Date.UTC(y, m, d) / 86400000);
+  const fromDn = n => { const t = new Date(n * 86400000); return {y:t.getUTCFullYear(), m:t.getUTCMonth(), d:t.getUTCDate(), w:t.getUTCDay()}; };
+  const iso = n => { const c = fromDn(n); return c.y + '-' + pad(c.m + 1) + '-' + pad(c.d); };
+  const md = n => { const c = fromDn(n); return (c.m + 1) + '/' + c.d + '(' + DOW[c.w] + (HOLIDAYS[iso(n)] ? '・祝' : '') + ')'; };
+  // 土曜 n とその翌日を「10/24・25」「1/31・2/1」のように書く。
+  const pair = n => { const a = fromDn(n), b = fromDn(n + 1); return (a.m + 1) + '/' + a.d + '・' + (a.m === b.m ? '' : (b.m + 1) + '/') + b.d; };
+  // 期間を「11/1(日)〜11/3(火・祝)」のように書く。
+  const span = (a, b) => a === b ? md(a) : md(a) + '〜' + md(b);
+  // 年 y0 と違う年の日には、頭に年を付ける（「2027年1/1(金・祝)」）。今日の状況・有給の案で使う。
+  const mdY = (n, y0) => { const y = fromDn(n).y; return (y !== y0 ? y + '年' : '') + md(n); };
+  const pairY = (n, y0) => { const y = fromDn(n).y; return (y !== y0 ? y + '年' : '') + pair(n); };
+  const spanY = (a, b, y0) => a === b ? mdY(a, y0) : mdY(a, y0) + '〜' + mdY(b, fromDn(a).y);
+  const todayDn = () => { const t = new Date(); return dn(t.getFullYear(), t.getMonth(), t.getDate()); };
+  // "2026-10-16" と "20261016" のどちらも読む。
+  function parseISO(s){
+    const m = /^(\d{4})-?(\d{2})-?(\d{2})$/.exec(s || '');
+    if(!m) return null;
+    const y = +m[1], mo = +m[2] - 1, d = +m[3];
+    const n = dn(y, mo, d), c = fromDn(n);
+    return (c.y === y && c.m === mo && c.d === d && y >= MIN_YEAR && y <= MAX_YEAR) ? n : null;
+  }
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const isNenmatsu = n => { const c = fromDn(n); return (c.m === 11 && c.d >= 29) || (c.m === 0 && c.d <= 3); };
+
+  /* ---------- 色（勤務の文字色を、背景の上で読める濃さにする） ---------- */
+  const pad16 = n => (n < 16 ? '0' : '') + n.toString(16).toUpperCase();
+  function hexToRgb(hex){ const v = parseInt(hex.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; }
+  function lum(hex){
+    const c = hexToRgb(hex).map(x => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  function rgbToHsl(r, g, b){
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h = 0, s = 0; const l = (mx + mn) / 2;
+    if(mx !== mn){
+      const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      if(mx === r) h = (g - b) / d + (g < b ? 6 : 0); else if(mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+      h /= 6;
+    }
+    return [h, s, l];
+  }
+  function hslToHex(h, s, l){
+    const f = (p, q, t) => { if(t < 0) t += 1; if(t > 1) t -= 1; if(t < 1/6) return p + (q - p) * 6 * t; if(t < 1/2) return q; if(t < 2/3) return p + (q - p) * (2/3 - t) * 6; return p; };
+    let r, g, b;
+    if(s === 0){ r = g = b = l; } else { const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q; r = f(p, q, h + 1/3); g = f(p, q, h); b = f(p, q, h - 1/3); }
+    return '#' + [r, g, b].map(x => pad16(Math.round(x * 255))).join('');
+  }
+  function tone(hex, bg){
+    if(contrast(hex, bg) >= 4.5) return hex;
+    const toBlack = contrast('#000000', bg) >= contrast('#FFFFFF', bg);
+    const rgb = hexToRgb(hex), hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+    let l = hsl[2];
+    for(let i = 0; i < 60; i++){
+      l += toBlack ? -0.02 : 0.02;
+      if(l <= 0.01 || l >= 0.99) break;
+      const c = hslToHex(hsl[0], hsl[1], l);
+      if(contrast(c, bg) >= 4.5) return c;
+    }
+    return toBlack ? '#000000' : '#FFFFFF';
+  }
+  function fgFor(t){
+    const rgb = hexToRgb(t.bg), hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+    const base = t.kind === 'rest' ? C_RED : hsl[1] < 0.2 ? C_INK : hslToHex(hsl[0], Math.max(hsl[1], 0.45), 0.22);
+    return tone(base, t.bg);
+  }
+  const TYPE = {};
+  TYPE_LIST.forEach(t => { t.fg = fgFor(t); TYPE[t.id] = t; });
+
+  /* ---------- 状態 ---------- */
+  const DEFAULT_NAMES = ['自分', '相手', '3人目'];
+  function newPerson(i, kind){
+    const p = {name:DEFAULT_NAMES[i], kind:'', mode:'week', cycle:'', base:todayDn(), want:0, pos:0, mask:'1000001', hol:true, nen:true, over:{}};
+    applyKind(p, kind);
+    return p;
+  }
+  // 勤務の形を切り替える。よくある形なら、その並び・曜日を入れる。
+  function applyKind(p, kind){
+    const pr = presetOf(kind), prev = p.kind;
+    // 自分で作った並び・選んだ曜日・シフト表は、別の形に替えてもしまっておき、戻したら戻す
+    // シフト表（mn）の日と、ほかの形の「その日だけの変更」（有給・休日出勤）は別々に持ち、行き来しても混ぜない
+    if(prev === 'cc' && kind !== 'cc'){ p.myCycle = p.cycle; p.myWant = p.want; p.myBase = p.base; }
+    if(prev === 'cw' && kind !== 'cw'){ p.myMask = p.mask; p.myHol = p.hol; }
+    if(prev === 'mn' && kind !== 'mn'){ p.myOver = p.over; p.over = p.patOver || {}; p.patOver = null; }
+    if(prev !== 'mn' && kind === 'mn'){ p.patOver = p.over; p.over = p.myOver || {}; p.myOver = null; }
+    p.kind = kind;
+    if(pr){
+      p.mode = pr.mode;
+      if(pr.mode === 'cycle'){ p.cycle = pr.cycle; p.want = 0; }
+      else { p.mask = pr.mask; p.hol = pr.hol; }
+    }
+    else if(kind === 'cc'){ p.mode = 'cycle'; if(p.myCycle !== undefined){ p.cycle = p.myCycle; p.want = p.myWant; p.base = p.myBase; } }   // しまっておいた並び・位置・基準日（無ければ今の並びを直す）
+    else if(kind === 'cw'){ p.mode = 'week'; if(p.myMask !== undefined){ p.mask = p.myMask; p.hol = p.myHol; } }         // しまっておいた曜日
+    else if(kind === 'mn'){ p.mode = 'manual'; }
+    fixPos(p);
+  }
+  function fixPos(p){ const N = p.cycle.length; p.pos = N ? Math.min(p.want, N - 1) : 0; }
+
+  const NOW0 = fromDn(todayDn());
+  const state = {
+    people: [newPerson(0, '42n'), newPerson(1, 'sdh')],
+    akeOff: false
+    , view: 'month', y: NOW0.y, m: NOW0.m, brushWho: 0, brush: null, plB: 1
+  };
+  let lastToday = todayDn();
+
+  // その人の、その日の勤務（並び・曜日から決まるもの）。シフト表の人は null。
+  function baseTypeAt(p, n){
+    if(p.mode === 'cycle'){
+      const N = p.cycle.length;
+      return N ? TYPE[p.cycle.charAt(mod(p.pos + (n - p.base), N))] : null;
+    }
+    if(p.mode === 'week'){
+      const off = p.mask.charAt(fromDn(n).w) === '1' || (p.hol && HOLIDAYS[iso(n)] !== undefined) || (p.nen && isNenmatsu(n));
+      return TYPE[off ? 'r' : 'k'];
+    }
+    return null;
+  }
+  const typeAt = (p, n) => { const o = p.over[n]; return o ? TYPE[o] : baseTypeAt(p, n); };
+  // off＝休み（有給を含む）、work＝出勤、ake＝夜勤明け、unk＝まだ入っていない
+  function stOf(p, n){
+    const t = typeAt(p, n);
+    if(!t) return 'unk';
+    if(t.kind === 'rest' || t.kind === 'paid') return 'off';
+    if(t.kind === 'ake') return state.akeOff ? 'off' : 'ake';
+    return 'work';
+  }
+  const allOff = n => state.people.every(p => stOf(p, n) === 'off');
+  const ALL = () => state.people.length >= 3 ? state.people.length + '人とも' : 'ふたりとも';
+  // 期間 a〜b の、みんな休みの日の配列
+  function offDays(a, b){ const out = []; for(let n = a; n <= b; n++){ if(allOff(n)) out.push(n); } return out; }
+  // 日 n をふくむ、みんな休みの続き（n が休みでなければ null）
+  function runAt(n){
+    if(!allOff(n)) return null;
+    let s = n, e = n;
+    while(n - s < HORIZON && allOff(s - 1)) s--;
+    while(e - n < HORIZON && allOff(e + 1)) e++;
+    return {s:s, e:e};
+  }
+  const isWeekendOrHol = n => { const w = fromDn(n).w; return w === 0 || w === 6 || HOLIDAYS[iso(n)] !== undefined; };
+  // a〜b にかかる年のうち、祝日が入っていない年（祝日を休みにしている人がいるときだけ）
+  function holGap(a, b){
+    if(!state.people.some(p => p.mode === 'week' && p.hol)) return [];
+    const out = [];
+    for(let y = fromDn(a).y; y <= fromDn(b).y; y++){ if(HOLIDAY_YEARS.indexOf(y) < 0) out.push(y); }
+    return out;
+  }
+  // 「※2028年から先の祝日は入っていないので…」「※2024〜2025年と2028年から先の祝日は…」
+  function holGapText(ys){
+    const first = HOLIDAY_YEARS[0], last = HOLIDAY_YEARS[HOLIDAY_YEARS.length - 1];
+    const past = ys.filter(y => y < first), future = ys.filter(y => y > last), parts = [];
+    if(past.length) parts.push(past.length > 1 ? past[0] + '〜' + past[past.length - 1] + '年' : past[0] + '年');
+    if(future.length) parts.push(future[0] + '年から先');
+    return '※' + parts.join('と') + 'の祝日は入っていないので、祝日も平日として数えています。';
+  }
+
+  function descOf(p){
+    const pr = presetOf(p.kind);
+    if(pr) return pr.name;
+    if(p.mode === 'cycle') return p.cycle.length ? '自分で作った並び（' + p.cycle.length + '日で1周）' : '並び（まだ入っていません）';
+    if(p.mode === 'week'){
+      const ds = WEEK_ORDER.filter(w => p.mask.charAt(w) === '1').map(w => DOW[w]);
+      return (ds.length ? ds.join('・') + (p.hol ? '・祝日' : '') : (p.hol ? '祝日' : '')) + (ds.length || p.hol ? '休み' : '曜日の休みなし');
+    }
+    if(p.mode === 'manual') return 'シフト表（日ごとに入力）';
+    return '';
+  }
+  function runs(cycle){
+    const out = [];
+    for(let i = 0; i < cycle.length; i++){
+      const c = cycle.charAt(i);
+      if(out.length && out[out.length - 1].id === c) out[out.length - 1].n++; else out.push({id:c, n:1});
+    }
+    return out;
+  }
+
+  /* ---------- 画面の部品 ---------- */
+  const $ = id => document.getElementById(id);
+  const twoCls = t => (t.label.length > 1 ? ' two' : '');
+  const styleOf = t => 'background:' + t.bg + ';color:' + t.fg;
+
+  function flash(id, msg){ const f = $(id); if(!f) return; f.textContent = msg; clearTimeout(f._t); f._t = setTimeout(() => { f.textContent = ''; }, 5000); }
+
+  /* ---------- 勤務の入力（1人ずつのカード） ---------- */
+  function kindOptions(p){
+    const opt = (v, label) => '<option value="' + v + '"' + (p.kind === v ? ' selected' : '') + '>' + esc(label) + '</option>';
+    let h = '<optgroup label="曜日で休みが決まる">';
+    PRESETS.filter(x => x.mode === 'week').forEach(x => { h += opt(x.key, x.name); });
+    h += '</optgroup><optgroup label="交替勤務（並びのくり返し）">';
+    PRESETS.filter(x => x.mode === 'cycle').forEach(x => { h += opt(x.key, x.name); });
+    h += '</optgroup>';
+    h += '<optgroup label="自分で決める">' + opt('cc', '並びを自分で作る・直す') + opt('cw', '休みの曜日を選ぶ') + opt('mn', 'シフト表を日ごとに入れる') + '</optgroup>';
+    return h;
+  }
+  function personHTML(i){
+    let h = '<section class="card person" data-i="' + i + '" aria-labelledby="ph' + i + '">' +
+      '<h2 id="ph' + i + '"><span class="tag">' + (i + 1) + '.</span><span class="p-name"></span>の勤務</h2>';
+    h += '<label class="field"><span>呼び名（8文字まで）</span><input type="text" class="f-name" maxlength="40" autocomplete="off" placeholder="例：わたし、夫、妻、A班"></label>';
+    h += '<label class="field"><span>勤務の形</span><select class="f-kind"></select></label>' +
+      '<div class="blk-cycle">' +
+        '<p class="hint">下が1周期ぶんの並びです。</p>' +
+        '<div class="strip s-view"></div>' +
+        '<p class="mini c-info"></p>';
+    h += '<details class="c-editor"><summary>並びを自分で作る・直す</summary>' +
+          '<p class="hint c-hint"></p>' +
+          '<div class="pal c-pal">' + TYPE_LIST.filter(t => t.id !== 'y' && t.id !== 'k').map(t => '<button type="button" data-add="' + t.id + '" style="' + styleOf(t) + '">＋' + esc(t.name) + '</button>').join('') + '</div>' +
+          '<div class="row2"><button type="button" class="btn-small c-bs">最後の1日を消す</button><button type="button" class="btn-small c-clr">並びを全部消す</button></div>' +
+        '</details>';
+    h += '<label class="field" style="margin-top:16px;"><span>基準にする日（どの日でも。たとえば今日）</span><input type="date" class="f-base" min="1971-01-01" max="2099-12-31"></label>' +
+        '<p class="hint">その日が並びのどこにあたるかを、下でタップして選びます。</p>' +
+        '<div class="strip s-pick"></div>' +
+        '<p class="anchor-line"></p>' +
+      '</div>' +
+      '<div class="blk-week">' +
+        '<p class="w-info"></p>';
+    h += '<div class="wk-edit"><p class="hint" style="margin:6px 0 0;">休みの曜日（押すと切り替わります）</p><div class="wk">' +
+          DOW.map((d, w) => '<button type="button" data-w="' + w + '" class="' + (w === 0 ? 'sun' : w === 6 ? 'sat' : '') + '" aria-label="' + d + '曜日を休みにする">' + d + '</button>').join('') + '</div>' +
+          '<label class="check"><input type="checkbox" class="f-hol">祝日も休み</label></div>';
+    h += '<label class="check"><input type="checkbox" class="f-nen">年末年始（12/29〜1/3）も休み</label>' +
+      '</div>';
+    h += '<div class="blk-manual"><p class="hint m-info"></p><button type="button" class="btn-small m-go" style="width:100%;">カレンダーでシフト表を入れる</button></div>';
+    if(i >= 2) h += '<div class="p-foot"><button type="button" class="btn-small p-remove">この人を外す</button></div>';
+    return h + '</section>';
+  }
+  function buildPeople(){
+    $('people').innerHTML = state.people.map((p, i) => personHTML(i)).join('');
+  }
+  const cardOf = i => $('people').querySelector('.person[data-i="' + i + '"]');
+
+  function stripHTML(p, selectable){
+    if(!p.cycle.length) return selectable ? '' : '<p class="hint" style="margin:0;">まだ1日も入っていません。「並びを自分で作る・直す」から足してください。</p>';
+    let html = '';
+    for(let i = 0; i < p.cycle.length; i++){
+      const t = TYPE[p.cycle.charAt(i)], sel = selectable && i === p.pos;
+      if(selectable){
+        html += '<button type="button" class="chip' + twoCls(t) + (sel ? ' sel' : '') + '" data-k="' + i + '" style="' + styleOf(t) + '" aria-pressed="' + (sel ? 'true' : 'false') + '" aria-label="' + (i + 1) + '日目 ' + t.name + '">' + t.label + '<small>' + (i + 1) + '</small></button>';
+      } else {
+        html += '<span class="chip' + twoCls(t) + '" style="' + styleOf(t) + '">' + t.label + '<small>' + (i + 1) + '</small></span>';
+      }
+    }
+    return html;
+  }
+  function renderPerson(i){
+    const p = state.people[i], card = cardOf(i);
+    if(!card) return;
+    const q = sel => card.querySelector(sel);
+    q('.p-name').textContent = p.name;
+    const ks = q('.f-kind');
+    ks.innerHTML = kindOptions(p);
+    ks.value = p.kind;
+    q('.blk-cycle').hidden = p.mode !== 'cycle';
+    q('.blk-week').hidden = p.mode !== 'week';
+    if(p.mode === 'cycle'){
+      q('.s-view').innerHTML = stripHTML(p, false);
+      q('.s-pick').innerHTML = stripHTML(p, true);
+      const N = p.cycle.length;
+      if(N){
+        const c = {work:0, rest:0, ake:0, paid:0};
+        for(let k = 0; k < N; k++) c[TYPE[p.cycle.charAt(k)].kind]++;
+        q('.c-info').textContent = N + '日で1周（出勤' + c.work + '日・休み' + c.rest + '日' + (c.ake ? '・明け' + c.ake + '日' : '') + '）：' + runs(p.cycle).map(r => TYPE[r.id].name + r.n).join('→');
+        const t = TYPE[p.cycle.charAt(p.pos)];
+        q('.anchor-line').innerHTML = '◎ <b>' + md(p.base) + '</b> は <b>' + (p.pos + 1) + '日目（' + t.name + '）</b>';
+      } else {
+        q('.c-info').textContent = '';
+        q('.anchor-line').textContent = '並びを1日以上入れると、ここで基準日の位置を選べます。';
+      }
+      // 入力している最中の欄は書き換えない（年を打っている途中で元の日付に戻さないため）。
+      const bd = q('.f-base');
+      if(document.activeElement !== bd && bd.value !== iso(p.base)) bd.value = iso(p.base);
+      q('.c-hint').textContent = N >= MAX_CYCLE ? '60日になりました。これ以上は足せません。' : '押した勤務が、並びの最後に1日ずつ足されます（60日まで）。';
+    }
+    if(p.mode === 'week'){
+      const ds = WEEK_ORDER.filter(w => p.mask.charAt(w) === '1').map(w => DOW[w]);
+      q('.w-info').textContent = (ds.length || p.hol) ? (ds.join('・') + (p.hol ? (ds.length ? '・' : '') + '祝日' : '') + 'が休みです。') : '曜日で決まる休みはありません。';
+      q('.f-nen').checked = p.nen;
+      card.querySelectorAll('.wk button').forEach(b => b.setAttribute('aria-pressed', p.mask.charAt(+b.dataset.w) === '1' ? 'true' : 'false'));
+      q('.f-hol').checked = p.hol;
+    }
+    q('.blk-manual').hidden = p.mode !== 'manual';
+    if(p.mode === 'manual'){
+      const keys = Object.keys(p.over).map(Number);
+      const t0 = todayDn(), ahead = keys.filter(n => n >= t0 && n < t0 + 60).length;
+      q('.m-info').textContent = '下のカレンダーの「その日だけ変える」で、日ごとに勤務を入れます。入れていない日は「・」になり、休みの重なりには数えません。' +
+        (keys.length ? '（入れた日：全部で ' + keys.length + '日、今日から60日のうち ' + ahead + '日）' : '');
+    }
+    const nm = q('.f-name');
+    if(document.activeElement !== nm && nm.value !== p.name) nm.value = p.name;
+  }
+  function renderSetup(){ state.people.forEach((p, i) => renderPerson(i)); }
+
+  /* ---------- 今日の状況 ---------- */
+  function renderStatus(){
+    const box = $('status'), t0 = todayDn(), P = state.people, W = ALL(), Y0 = fromDn(t0).y;
+    const W2 = P.length >= 3 ? P.length + '人そろって' : 'ふたりそろって';
+    const html = '今日 ' + md(t0) + '：' + P.map(p => { const t = typeAt(p, t0); return esc(p.name) + ' <b>' + (t ? esc(t.name) : '未入力') + '</b>'; }).join('、');
+    // 勤務が1日も入っていない人がいると、重なりは出せない
+    const blank = P.filter(p => { for(let n = t0; n <= t0 + HORIZON; n++){ if(typeAt(p, n)) return false; } return true; });
+    if(blank.length){
+      box.innerHTML = html + '<span class="sub">' + esc(blank.map(p => p.name).join('・')) + 'の勤務がまだ入っていないので、' + W + '休みの日を出せません。</span>';
+      return;
+    }
+    // 勤務が入っていない日がある人（シフト表）がいるときは、「この先〜日」ではなく「入っている日の中には」と言う
+    const gaps = P.some(p => { for(let n = t0; n <= t0 + HORIZON; n++){ if(!typeAt(p, n)) return true; } return false; });
+    const scope = days => gaps ? '勤務が入っている日の中には、' : 'この先' + days + '、';
+    const longEnd = (s0, r) => r.e - s0 >= HORIZON;   // 探す上限（400日）まで休みが続いている
+    const subs = [];
+    let usedEnd = t0, claimed = false;   // 祝日の注意のため：文に出した日の最後／「ありません」と言ったか
+    const todayOff = allOff(t0);
+    let cur = null, from = t0 + 1;
+    if(todayOff){
+      cur = runAt(t0);
+      subs.push('今日は' + W + '休みです' + (longEnd(t0, cur) ? '（' + HORIZON + '日以上続きます）' : cur.e > t0 ? '（' + mdY(cur.e, Y0) + 'まで、あと' + (cur.e - t0) + '日続きます）' : '') + '。');
+      usedEnd = cur.e; from = cur.e + 1;
+    }
+    const todayRun2 = cur !== null && cur.e > t0;   // 今日から2日以上続く休みの中にいる
+    let nx = null;
+    if(!(cur && longEnd(t0, cur))){
+      for(let n = from; n <= t0 + HORIZON; n++){ if(allOff(n)){ nx = n; break; } }
+      if(nx === null){
+        claimed = true;
+        subs.push(todayOff ? 'この休みのあとは、' + (gaps ? '勤務が入っている日の中に' : 'この先' + HORIZON + '日のうちに') + W + '休みの日はありません。'
+                           : scope(HORIZON + '日') + W + '休みの日はありません。');
+      } else {
+        const r = runAt(nx);
+        subs.push((todayOff ? 'その次に' : '次に') + W + '休みの日は <b>' + mdY(nx, Y0) + '</b>' +
+          (longEnd(nx, r) ? 'から（' + HORIZON + '日以上続きます）' : r.e > nx ? '〜' + mdY(r.e, fromDn(nx).y) + '（' + (r.e - nx + 1) + '日間）' : '') + 'です。');
+        usedEnd = Math.max(usedEnd, Math.min(r.e, nx + HORIZON));
+      }
+    }
+    // 2日以上続く休み（今日の続きより後に始まるもの。上の行で出したものは除く）
+    let r2 = null;
+    if(nx !== null){
+      for(let n = nx; n <= t0 + HORIZON; n++){
+        if(allOff(n) && allOff(n + 1) && !allOff(n - 1)){ r2 = {s:n, e:runAt(n).e}; break; }
+      }
+    }
+    if(r2 && r2.s !== nx){
+      subs.push((todayRun2 ? 'そのあと、' : '') + '2日以上続けて' + W + '休みになるのは、' +
+        (longEnd(r2.s, r2) ? mdY(r2.s, Y0) + 'から（' + HORIZON + '日以上続きます）' : spanY(r2.s, r2.e, Y0) + '（' + (r2.e - r2.s + 1) + '日間）') + 'です。');
+      usedEnd = Math.max(usedEnd, Math.min(r2.e, r2.s + HORIZON));
+    } else if(!r2 && nx !== null){
+      claimed = true;
+      subs.push(todayRun2 ? 'ほかに' + W + '休みが2日以上続く日は、' + (gaps ? '勤務が入っている日の中にはありません。' : 'この先' + HORIZON + '日のうちにはありません。')
+                          : scope(HORIZON + '日') + W + '休みが2日以上続く日はありません。');
+    }
+    // 土曜・日曜の両方が、みんな休みになる週末。日曜に開いたときは、きのうの土曜から見る。
+    // すでに上の行で出した続きの休みに入っている週末なら、同じことなので書かない。
+    let wk = null;
+    for(let n = fromDn(t0).w === 0 ? t0 - 1 : t0; n <= t0 + 370; n++){
+      if(fromDn(n).w === 6 && allOff(n) && allOff(n + 1)){ wk = n; break; }
+    }
+    const shown = [];
+    if(cur) shown.push(cur);
+    if(nx !== null) shown.push(runAt(nx));
+    if(r2) shown.push(r2);
+    const inShown = wk !== null && shown.some(r => r.s <= wk && wk + 1 <= r.e);
+    if(wk === null){ claimed = true; subs.push(scope('1年') + W2 + '土日休みになる週末はありません。'); }
+    else {
+      usedEnd = Math.max(usedEnd, wk + 1);
+      if(!inShown) subs.push(wk <= t0 ? 'この週末（' + pair(wk) + '）は、' + W2 + '土日休みです。' : W2 + '土日休みになる週末は、次は ' + pairY(wk, Y0) + ' です。');
+    }
+    if(gaps) subs.push('※勤務が入っていない日（・）は、休みの重なりに数えていません。');
+    // 祝日の入っていない年の注意は、文に出した日か「ありません」と探した範囲が、その年にかかるときだけ
+    const hg = holGap(t0, claimed ? t0 + HORIZON : usedEnd);
+    if(hg.length) subs.push(holGapText(hg));
+    box.innerHTML = html + subs.map(x => '<span class="sub">' + x + '</span>').join('');
+  }
+
+  /* ---------- カレンダー ---------- */
+  function bandHTML(p, n, hide){
+    const t = typeAt(p, n);
+    hide = hide || '';
+    if(!t) return '<span class="b unk"' + hide + '>・</span>';
+    let cls = 'b' + twoCls(t) + (t.kind === 'rest' ? ' rest' : '');
+    if(p.mode !== 'manual' && p.over[n] !== undefined){ const b = baseTypeAt(p, n); if(!b || b.id !== p.over[n]) cls += ' ovr'; }
+    return '<span class="' + cls + '" style="' + styleOf(t) + '"' + hide + '>' + t.label + '</span>';
+  }
+  // mini＝年表示の小さい月、paint＝日を押せるボタンにする（その日だけ変える）
+  function gridHTML(y, m, mini, paint){
+    const first = dn(y, m, 1), w0 = fromDn(first).w, days = fromDn(dn(y, m + 1, 0)).d, t0 = todayDn(), P = state.people, W = ALL();
+    const wrap = mini ? 'span' : 'div', tag = mini ? 'span' : (paint ? 'button' : 'div');
+    let h = '<' + wrap + ' class="cal' + (mini ? ' mini' : '') + ' p' + P.length + '">';
+    DOW.forEach((d, i) => { h += '<' + wrap + ' class="dow' + (i === 0 ? ' sun' : i === 6 ? ' sat' : '') + '">' + d + '</' + wrap + '>'; });
+    for(let i = 0; i < w0; i++) h += '<' + wrap + ' class="cell out"></' + wrap + '>';
+    for(let d = 1; d <= days; d++){
+      const n = first + d - 1, wd = (w0 + d - 1) % 7, hol = HOLIDAYS[iso(n)], all = allOff(n);
+      const cls = 'cell' + (wd === 0 ? ' sun' : wd === 6 ? ' sat' : '') + (hol ? ' hol' : '') + (n === t0 ? ' today' : '') + (all ? ' both' : '');
+      let attr = ' data-n="' + n + '" data-date="' + iso(n) + '"' + (all ? ' data-both="1"' : '');
+      let sr = '';
+      if(!mini){
+        const tip = (n === t0 ? '今日 ' : '') + (m + 1) + '月' + d + '日(' + DOW[wd] + ')' + (hol ? ' ' + hol : '') + '　' +
+          P.map(p => { const t = typeAt(p, n); return p.name + '：' + (t ? t.name : '未入力'); }).join('、') + (all ? '　→ ' + W + '休み' : '');
+        if(paint) attr += ' type="button" aria-label="' + esc(tip) + '"';
+        else { attr += ' title="' + esc(tip) + '"'; sr = '<span class="sr">' + esc(tip) + '</span>'; }
+      }
+      const hide = sr ? ' aria-hidden="true"' : '';
+      h += '<' + tag + attr + ' class="' + cls + '">' + sr + '<span class="d"' + hide + '>' + d + '</span>' + (mini ? '' : P.map(p => bandHTML(p, n, hide)).join('')) + '</' + tag + '>';
+    }
+    return h + '</' + wrap + '>';
+  }
+  function monthInfo(y, m){
+    const a = dn(y, m, 1), b = dn(y, m + 1, 0), list = offDays(a, b);
+    return {list:list, we:list.filter(isWeekendOrHol).length, each:state.people.map(p => { let c = 0; for(let n = a; n <= b; n++){ if(stOf(p, n) === 'off') c++; } return c; })};
+  }
+  const dayWithDow = n => { const c = fromDn(n); return c.d + '(' + DOW[c.w] + (HOLIDAYS[iso(n)] ? '・祝' : '') + ')'; };
+  function holNote(y, m){
+    const first = dn(y, m, 1), days = fromDn(dn(y, m + 1, 0)).d, list = [];
+    for(let d = 1; d <= days; d++){ const h = HOLIDAYS[iso(first + d - 1)]; if(h) list.push(d + '日 ' + h); }
+    return list.length ? '祝日：' + list.join('、') : (HOLIDAY_YEARS.indexOf(y) < 0 ? '※' + y + '年の祝日は' + (y > HOLIDAY_YEARS[HOLIDAY_YEARS.length - 1] ? 'まだ' : '') + '入っていません（祝日を表示できるのは2026年・2027年だけです）。' : '');
+  }
+  function renderLegend(){
+    const used = {};
+    state.people.forEach(p => {
+      if(p.mode === 'cycle') for(let k = 0; k < p.cycle.length; k++) used[p.cycle.charAt(k)] = 1;
+      if(p.mode === 'week'){ used.k = 1; used.r = 1; }
+      Object.keys(p.over).forEach(k => { used[p.over[k]] = 1; });
+    });
+    $('legend').innerHTML = '<span><i class="both"></i>' + ALL() + '休み</span>' +
+      TYPE_LIST.filter(t => used[t.id]).map(t => '<span><i style="background:' + t.bg + '"></i>' + t.name + '</span>').join('');
+    const pos = ['上', state.people.length >= 3 ? 'まん中' : '下', '下'];
+    $('bandKey').textContent = '各日の' + state.people.map((p, i) => pos[i] + 'の段＝' + p.name).join('、') + '。';
+  }
+
+
+  function copyText(text, okMsg){
+    const fallback = () => {
+      let ok = false;
+      try {
+        const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch(e){ ok = false; }
+      flash('feedback', ok ? okMsg : 'コピーできませんでした。Safari や Chrome で開き直してお試しください。');
+    };
+    try {
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => flash('feedback', okMsg), fallback); else fallback();
+    } catch(e){ fallback(); }
+  }
+
+  /* ---------- URL（# より後ろ）に設定を入れる ---------- */
+  // 名前などは encodeURIComponent に加えて ( ) ' ! * も符号化する（LINE などでURLが途中で切れないように）。
+  const enc = s => encodeURIComponent(s).replace(/[()'!*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+  const compact = n => iso(n).replace(/-/g, '');
+  // 制御文字・対になっていないサロゲート・向きを変える文字・幅のない文字（絵文字をつなぐ ZWJ と異体字セレクタは残す）を取りのぞく。
+  const INVISIBLE = /[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180E\u200B\u200C\u200E\u200F\u2028-\u202E\u2060-\u206F\u2800\u3164\uFEFF\uFFA0]/g;
+  let VISIBLE = null;   // 文字・数字・記号・句読点（古いブラウザで \p{} が使えないときは、空白でない文字があればよい）
+  try { VISIBLE = new RegExp('[\\p{L}\\p{N}\\p{S}\\p{P}]', 'u'); } catch(e){ VISIBLE = /\S/; }
+  const clean = s => {
+    let prev = 0;   // タグ文字（U+E0000〜E007F）は、黒い旗（U+1F3F4）に続く旗の並びの中でだけ残す
+    const t = Array.from(String(s)).filter(ch => {
+      const c = ch.codePointAt(0);
+      const tag = c >= 0xE0000 && c <= 0xE007F, keep = tag ? (prev === 0x1F3F4 || prev === -1) : true;
+      prev = tag ? (keep && c !== 0xE007F ? -1 : 0) : c;
+      return keep && !(c < 0x20 || c === 0x7F || (c >= 0x80 && c < 0xA0) || (c >= 0xD800 && c <= 0xDFFF));
+    }).join('').replace(INVISIBLE, '').trim();
+    return VISIBLE.test(t) ? t : '';
+  };
+  // 文字数は見た目の1文字（書記素）で数える。Intl.Segmenter が無い古いブラウザでは、コードポイントで数える。
+  const SEG = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('ja', {granularity:'grapheme'}) : null;
+  const graphemes = s => SEG ? Array.from(SEG.segment(s), x => x.segment) : Array.from(s);
+  const clip = (s, n) => graphemes(s).slice(0, n).join('');
+  // その日だけの変更は「20261101-ddrrn」のように、続いた日をまとめて書く。
+  function encOver(over){
+    const keys = Object.keys(over).map(Number).sort((a, b) => a - b), segs = [];
+    let cur = null;
+    keys.forEach(n => {
+      if(cur && n === cur.s + cur.t.length && cur.t.length < 400) cur.t += over[n];   // 1つの区切りは400日まで
+      else { cur = {s:n, t:over[n]}; segs.push(cur); }
+    });
+    return segs.map(g => compact(g.s) + '-' + g.t).join('.');
+  }
+  function encodeState(){
+    const parts = ['v=1'];
+    if(state.akeOff) parts.push('a=1');
+    state.people.forEach((p, i) => {
+      parts.push('k' + i + '=' + p.kind);
+      if(p.name !== DEFAULT_NAMES[i]) parts.push('m' + i + '=' + enc(p.name));
+      if(p.mode === 'cycle'){
+        if(p.kind === 'cc') parts.push('c' + i + '=' + p.cycle);
+        parts.push('b' + i + '=' + compact(p.base), 'q' + i + '=' + p.pos);
+      }
+      if(p.mode === 'week'){
+        if(p.kind === 'cw') parts.push('w' + i + '=' + p.mask, 'h' + i + '=' + (p.hol ? 1 : 0));
+        parts.push('e' + i + '=' + (p.nen ? 1 : 0));
+      }
+      const o = encOver(p.over);
+      if(o) parts.push('o' + i + '=' + o);
+    });
+    return '#' + parts.join('&');
+  }
+  // 読めた項目だけ反映する。読めないところがあれば false を返す。
+  let hashLimit = false;   // その日だけの変更が上限をこえていて、切って読んだ
+  let hashBad = false;      // 上限のほかに、読めないところがあった
+  function showHashNote(ok){
+    $('hashNote').textContent = (hashBad ? '開いたURLの設定を一部読み取れませんでした。勤務の形と基準日が合っているか、確かめてください。' : '') +
+      (hashLimit ? 'その日だけの変更（シフト表を含む）が1人' + MAX_OVER + '日をこえていたので、' + MAX_OVER + '日ぶんだけ読み込みました（日付の早いほうから）。' : '');
+    $('hashNote').hidden = ok;
+  }
+  function applyHash(hash){
+    hashLimit = false; hashBad = false;
+    const q = {};
+    hash.replace(/^#/, '').replace(/&amp;/g, '&').split('&').forEach(kv => { const i = kv.indexOf('='); if(i > 0) q[kv.slice(0, i)] = kv.slice(i + 1); });
+    const dec = s => { try { return decodeURIComponent(s); } catch(e){ return ''; } };
+    let bad = false;   // 上限のほかに読めないところ
+    const people = [];
+    for(let i = 0; i < MAX_PEOPLE; i++){
+      const kind = q['k' + i];
+      if(kind === undefined){ if(i < 2) bad = true; continue; }
+      const valid = presetOf(kind) || kind === 'cc' || kind === 'cw' || kind === 'mn';
+      const p = newPerson(people.length, valid ? (kind === 'cc' || kind === 'cw' || kind === 'mn' ? '42n' : kind) : (i === 0 ? '42n' : 'sdh'));
+      if(!valid) bad = true;
+      if(kind === 'cc'){
+        const c = q['c' + i];
+        if(c !== undefined && c.length <= MAX_CYCLE && /^[dn123ar]*$/.test(c)){ p.cycle = c; } else bad = true;
+        applyKind(p, 'cc');
+      } else if(kind === 'cw'){
+        if(/^[01]{7}$/.test(q['w' + i] || '')) p.mask = q['w' + i]; else bad = true;
+        p.hol = q['h' + i] === '1';
+        applyKind(p, 'cw');
+      } else if(kind === 'mn'){
+        applyKind(p, 'mn');
+      }
+      if(p.mode === 'cycle'){
+        const b = parseISO(q['b' + i]); if(b !== null) p.base = b; else bad = true;
+        const qq = q['q' + i];
+        if(/^\d{1,2}$/.test(qq || '') && +qq < Math.max(p.cycle.length, 1)) p.want = +qq; else { p.want = 0; bad = true; }
+        fixPos(p);
+      }
+      if(p.mode === 'week' && q['e' + i] !== undefined) p.nen = q['e' + i] === '1';
+      if(q['m' + i] !== undefined){ const nm = clip(clean(dec(q['m' + i])), 8); if(nm) p.name = nm; }
+      if(q['o' + i]){
+        let count = 0;
+        q['o' + i].split('.').forEach(seg => {
+          const m = /^(\d{8})-([dn123kary]+)$/.exec(seg);
+          if(!m){ bad = true; return; }
+          const s = parseISO(m[1]); if(s === null){ bad = true; return; }
+          for(let k = 0; k < m[2].length; k++){
+            if(count >= MAX_OVER){ hashLimit = true; break; }   // 上限より先は読まない（知らせを出す）
+            p.over[s + k] = m[2].charAt(k); count++;
+          }
+        });
+      }
+      people.push(p);
+    }
+    if(people.length >= 2){ state.people = people; state.akeOff = q.a === '1'; }   // 人を読めなかったときは、明けの設定もそのまま
+    state.brushWho = 0; state.brush = null;
+    hashBad = bad;
+    return !bad && !hashLimit;
+  }
+  let urlDirty = false, hashTimer = null, savedHash = null, changeNoted = false;
+  function writeHash(){
+    clearTimeout(hashTimer); hashTimer = null;
+    const h = encodeState();
+    try { if(location.hash !== h) history.replaceState(null, '', h); } catch(e){ /* file:// などで失敗しても動作は続ける */ }
+    return h;
+  }
+  // 入力のたびには書かない（Safari は短い間に何度も書くと例外になる）。400ms 待って1回だけ書く。
+  function scheduleHash(){
+    if(!urlDirty) return;
+    clearTimeout(hashTimer);
+    hashTimer = setTimeout(writeHash, 400);
+  }
+  function renderSaveNote(){
+    const h = encodeState(), changed = savedHash !== null && h !== savedHash;
+    document.title = APP_TITLE;
+    $('saveNote').textContent = savedHash === null
+      ? '設定はこのページのURLの中に入ります。残すときは、URLをコピーするか、このページをブックマークしてください。'
+      : changed ? '設定を変えたので、URLも変わりました。残すときは、URLをコピーし直すか、ブックマークを登録し直してください。' : '';
+    if(changed && !changeNoted && toastAction === null){
+      changeNoted = true;
+      toast('設定を変えました。残すときは、URLをコピーし直してください。', '', null, 7000);
+    }
+  }
+  // 何かを変えたときに呼ぶ（開いただけではURLを書かない）。
+  function changed(){ urlDirty = true; $('hashNote').hidden = true; if(toastAction) hideToast(); renderAll(); }
+
+  /* ---------- 知らせ・取り消し ---------- */
+  // 「取り消す」などのボタンがある知らせは、ボタンにフォーカスを移す（キーボードでもすぐ押せるように）。
+  // 取り消しは、その操作の直前の状態に戻すので、あとで別の変更をしたら知らせを消す（changed()）。
+  // opts.focus＝false：フォーカスを移さない（選択欄の矢印キーの操作を止めないため）／opts.back：戻り先が消えたときのフォーカス先／opts.keep：知らせで隠さない部品
+  let toastTimer = null, toastAction = null, toastReturn = null, toastBack = null, toastAt = 0;
+  const visible = el => !!(el && document.body.contains(el) && el.offsetParent !== null);
+  function toast(msg, label, action, ms, opts){
+    opts = opts || {};
+    $('toastMsg').textContent = msg; toastAction = action || null;
+    $('toastBtn').hidden = !action; if(action) $('toastBtn').textContent = label;
+    $('toast').hidden = false; toastAt = performance.now();
+    clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, ms || (action ? 20000 : 12000));
+    // 知らせの高さぶん、ページの下に余白を足す（いちばん下のものも、知らせの上までスクロールできるように）
+    const th = $('toast').offsetHeight;
+    document.body.style.paddingBottom = (th + 40) + 'px';
+    if(opts.keep && visible(opts.keep)){
+      const r = opts.keep.getBoundingClientRect(), top = window.innerHeight - th - 24;
+      if(r.bottom > top) window.scrollBy(0, r.bottom - top + 8);
+    }
+    if(action && opts.focus !== false){
+      const a = document.activeElement;
+      toastReturn = (a && a !== $('toastBtn') && a !== document.body) ? a : null;
+      toastBack = opts.back || null;
+      try { $('toastBtn').focus({preventScroll:true}); } catch(e){ /* 古いブラウザ */ }
+    }
+  }
+  function hideToast(){
+    const had = document.activeElement === $('toastBtn');
+    $('toast').hidden = true; toastAction = null; clearTimeout(toastTimer);
+    document.body.style.paddingBottom = '';
+    if(had){
+      const t = visible(toastReturn) ? toastReturn : visible(toastBack) ? toastBack : null;
+      if(t) t.focus({preventScroll:true}); else if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    }
+    toastReturn = null; toastBack = null;
+  }
+  function snapshot(){
+    return {people:state.people.map(p => Object.assign({}, p, {over:Object.assign({}, p.over)})), akeOff:state.akeOff};
+  }
+  function restore(s){
+    const rebuild = s.people.length !== state.people.length;
+    state.people = s.people; state.akeOff = s.akeOff;
+    if(state.brushWho >= state.people.length) state.brushWho = 0;
+    if(rebuild) buildPeople();
+    changed();
+  }
+
+  /* ---------- 月・年の表示 ---------- */
+  function renderBrush(){
+    const box = $('brushBox'), isYear = state.view === 'year';
+    box.style.display = isYear ? 'none' : '';
+    if(isYear || !box.open) state.brush = null;
+    if(state.brushWho >= state.people.length) state.brushWho = 0;
+    $('brushWho').innerHTML = state.people.map((p, i) => '<button type="button" data-who="' + i + '" aria-pressed="' + (i === state.brushWho ? 'true' : 'false') + '">' + esc(p.name) + '</button>').join('');
+    const p = state.people[state.brushWho];
+    let ids;
+    if(p.mode === 'cycle'){ const u = {r:1, y:1}; for(let k = 0; k < p.cycle.length; k++) u[p.cycle.charAt(k)] = 1; ids = TYPE_LIST.filter(t => u[t.id]).map(t => t.id); }
+    else if(p.mode === 'week') ids = ['k', 'r', 'y'];
+    else ids = ['d', 'n', '1', '2', '3', 'k', 'a', 'r', 'y'];
+    if(state.brush !== null && state.brush !== 'x' && ids.indexOf(state.brush) < 0) state.brush = null;
+    $('brushes').innerHTML = ids.map(id => { const t = TYPE[id]; return '<button type="button" data-id="' + id + '" style="' + styleOf(t) + '" aria-pressed="' + (state.brush === id ? 'true' : 'false') + '">' + t.name + '</button>'; }).join('') +
+      '<button type="button" data-id="x" class="erase" aria-pressed="' + (state.brush === 'x' ? 'true' : 'false') + '">' + (p.mode === 'manual' ? '消す' : '元に戻す') + '</button>';
+    const who = esc(p.name);
+    $('brushHint').innerHTML = state.brush === null ? '上で勤務を選んでから、カレンダーの日をタップします（' + who + 'の段が変わります）。'
+      : state.brush === 'x' ? who + 'の、' + (p.mode === 'manual' ? '消したい' : '元に戻したい') + '日をタップしてください。終わるときは、同じボタンをもう一度押します。'
+      : who + 'を「' + TYPE[state.brush].name + '」にしたい日をタップしてください。終わるときは、同じボタンをもう一度押します。';
+    const total = Object.keys(p.over).length;
+    $('overCount').textContent = total ? p.name + 'の' + (p.mode === 'manual' ? '入れた日' : '変えた日') + '：全部で ' + total + '日' : '';
+    $('overClear').textContent = p.mode === 'manual' ? 'この人の入れた日をすべて消す' : 'この人の変えた日をすべて元に戻す';
+    $('overClear').style.display = total ? '' : 'none';
+  }
+  function renderViewer(){
+    const isYear = state.view === 'year';
+    $('app').classList.toggle('year-wide', isYear && window.innerWidth >= 760);
+    document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === state.view ? 'true' : 'false'));
+    $('navLabel').textContent = isYear ? state.y + '年' : state.y + '年' + (state.m + 1) + '月';
+    $('prevBtn').setAttribute('aria-label', isYear ? '前の年' : '前の月');
+    $('nextBtn').setAttribute('aria-label', isYear ? '次の年' : '次の月');
+    $('prevBtn').disabled = isYear ? state.y <= MIN_YEAR : (state.y <= MIN_YEAR && state.m === 0);
+    $('nextBtn').disabled = isYear ? state.y >= MAX_YEAR : (state.y >= MAX_YEAR && state.m === 11);
+    const t0 = fromDn(todayDn());
+    $('todayBtn').hidden = (state.y === t0.y && (isYear || state.m === t0.m));
+    $('todayBtn').textContent = isYear ? '今年に戻る' : '今月に戻る';
+    renderBrush();
+    renderLegend();
+    const area = $('calArea');
+    if(isYear){
+      let h = '<div class="year-grid">';
+      for(let m = 0; m < 12; m++){
+        const c = offDays(dn(state.y, m, 1), dn(state.y, m + 1, 0)).length;
+        h += '<button type="button" class="ym" data-m="' + m + '" aria-label="' + (m + 1) + '月を大きく見る（' + ALL() + '休み ' + c + '日）"><span class="ym-title">' + (m + 1) + '月<span class="ym-count">' + c + '日</span></span>' + gridHTML(state.y, m, true, false) + '</button>';
+      }
+      area.innerHTML = h + '</div>';
+    } else {
+      area.innerHTML = gridHTML(state.y, state.m, false, state.brush !== null);
+    }
+    $('holList').textContent = isYear ? (HOLIDAY_YEARS.indexOf(state.y) < 0 ? NO_HOLIDAY_TEXT : '') : holNote(state.y, state.m);
+    renderStats();
+  }
+  function runsIn(a, b){
+    // a〜b にかかる、みんな休みの続き（a・b の外へはみ出す分も含めて書く）
+    const out = [];
+    let n = a;
+    while(n <= b){
+      if(allOff(n)){ const r = runAt(n); out.push(r); n = r.e + 1; } else n++;
+    }
+    return out;
+  }
+  function renderStats(){
+    const box = $('stats'), W = ALL();
+    if(state.view === 'year'){
+      const a = dn(state.y, 0, 1), b = dn(state.y, 11, 31), all = offDays(a, b);
+      let h = '<div><span class="big">' + state.y + '年：' + W + '休み ' + all.length + '日</span></div>' +
+              '<div class="mini" style="margin-top:2px;">それぞれの休み：' + state.people.map(p => { let c = 0; for(let n = a; n <= b; n++){ if(stOf(p, n) === 'off') c++; } return esc(p.name) + ' ' + c + '日'; }).join('・') + '</div>' +
+              '<table><thead><tr><th>月</th><th>' + W + '休み</th><th>うち土日祝</th><th>2日以上続く</th></tr></thead><tbody>';
+      for(let m = 0; m < 12; m++){
+        const ma = dn(state.y, m, 1), mb = dn(state.y, m + 1, 0), list = offDays(ma, mb);
+        const r2 = runsIn(ma, mb).filter(r => r.s >= ma && r.e - r.s >= 1).length;
+        h += '<tr><td>' + (m + 1) + '月</td><td>' + list.length + '日</td><td>' + list.filter(isWeekendOrHol).length + '日</td><td>' + r2 + '回</td></tr>';
+      }
+      box.innerHTML = h + '</tbody></table><p class="mini">「2日以上続く」は、その月に始まるものを数えています。</p>';
+    } else {
+      const info = monthInfo(state.y, state.m);
+      box.innerHTML = '<div><span class="big">' + (state.m + 1) + '月：' + W + '休み ' + info.list.length + '日</span>' + (info.list.length ? '<span class="mini">（うち土日・祝日 ' + info.we + '日）</span>' : '') + '</div>' +
+        (info.list.length ? '<div class="month-list">' + info.list.map(dayWithDow).join('・') + '</div>' : '') +
+        '<div class="mini" style="margin-top:4px;">それぞれの休み：' + state.people.map((p, i) => esc(p.name) + ' ' + info.each[i] + '日').join('・') + '（有給をふくむ）</div>';
+    }
+  }
+
+  /* ---------- 有給で連休をつくる ---------- */
+  // 明日から PL_DAYS 日の中で、有給（全員の合計で B 日まで）を入れると、みんな休みが2日以上つながる期間を探す。
+  // 夜勤明け（休みに数えない設定のとき）と、勤務が入っていない日は、有給を入れられない日として扱う。
+  function plCandidates(B){
+    const t0 = todayDn(), a = t0 + 1, b = t0 + PL_DAYS, P = state.people, info = [];
+    for(let n = a; n <= b; n++){
+      const sts = P.map(p => stOf(p, n));
+      // もとは休みの日に入れた休日出勤には、有給を入れない（取るのではなく、出勤をやめる話なので）
+      const holidayWork = P.some((p, i) => sts[i] === 'work' && p.mode !== 'manual' && p.over[n] !== undefined && (() => { const bt = baseTypeAt(p, n); return bt && (bt.kind === 'rest' || bt.kind === 'paid'); })());
+      if(holidayWork || sts.some(x => x === 'unk' || x === 'ake')){ info.push(null); continue; }
+      const who = []; sts.forEach((x, i) => { if(x === 'work') who.push(i); });
+      info.push({n:n, who:who, cost:who.length});
+    }
+    const wins = [];
+    for(let i = 0; i < info.length; i++){
+      if(!info[i]) continue;
+      if(i > 0 && info[i - 1] && info[i - 1].cost === 0) continue;   // 前の日から始めたほうが長い
+      let cost = 0, j = i;
+      while(j < info.length && info[j] && cost + info[j].cost <= B){ cost += info[j].cost; j++; }
+      const e = j - 1;
+      if(e < i || cost === 0) continue;
+      let s = info[i].n, en = info[e].n;
+      // 連休の長さは明日から数える（今日より前へはさかのぼらない）。半年の範囲の外へ続く分は数える。
+      if(e === info.length - 1) while(en - b < HORIZON && allOff(en + 1)) en++;
+      if(en - s + 1 < 2) continue;
+      const days = []; for(let k = i; k <= e; k++){ if(info[k].cost) days.push({n:info[k].n, who:info[k].who}); }
+      wins.push({s:s, e:en, len:en - s + 1, cost:cost, days:days});
+    }
+    wins.sort((x, y) => (y.len - x.len) || (x.cost - y.cost) || (x.s - y.s));
+    const res = [];
+    wins.forEach(w => {
+      if(res.length >= 8) return;
+      if(res.some(r => r.s <= w.s && w.e <= r.e && r.cost <= w.cost)) return;   // もっと安くて長い案に入っている
+      res.push(w);
+    });
+    return res;
+  }
+  function renderPL(){
+    const W = ALL(), t0 = todayDn(), Y0 = fromDn(t0).y, many = state.people.length >= 3;
+    $('plTitle').textContent = '有給で、' + (many ? 'みんな' : 'ふたり') + 'の連休をつくる';
+    const hg = holGap(t0 + 1, t0 + PL_DAYS);
+    $('plHint').textContent = '明日から半年（' + mdY(t0 + 1, Y0) + '〜' + mdY(t0 + PL_DAYS, Y0) + '）の中で、有給を入れると' + W + '休みが2日以上つながる期間です。長くなる順に、8つまで出します。' + (hg.length ? holGapText(hg) : '');
+    $('plB').value = String(state.plB);
+    // 半年のあいだ1日も勤務が入っていない人がいると、案は出せない
+    const blank = state.people.filter(p => { for(let n = t0 + 1; n <= t0 + PL_DAYS; n++){ if(typeAt(p, n)) return false; } return true; });
+    if(blank.length){ $('plBody').innerHTML = '<p class="hint" style="margin:0;">' + blank.map(p => esc(p.name)).join('・') + 'の勤務が入っていないので、案を出せません。' + (blank.some(p => p.mode === 'cycle') ? '並びを入れるか、勤務の形を選んでください。' : 'シフト表を入れるか、勤務の形を選んでください。') + '</p>'; return; }
+    const list = plCandidates(state.plB);
+    if(!list.length){ $('plBody').innerHTML = '<p class="hint" style="margin:0;">この半年では、有給' + state.plB + '日までで' + W + '休みが2日以上つながる期間は見つかりませんでした。</p>'; return; }
+    $('plBody').innerHTML = '<ul class="pl-list">' + list.map(w => {
+      const per = state.people.map((p, i) => ({i:i, days:w.days.filter(d => d.who.indexOf(i) >= 0).map(d => d.n)})).filter(x => x.days.length);
+      const code = w.days.map(d => d.n + ':' + d.who.join(',')).join(';');
+      return '<li data-s="' + w.s + '" data-e="' + w.e + '" data-cost="' + w.cost + '"><span class="len">' + w.len + '日間</span>' + spanY(w.s, w.e, Y0) + '<br>' +
+        '有給 ' + w.cost + '日：' + per.map(x => esc(state.people[x.i].name) + 'が <b>' + x.days.map(n => mdY(n, Y0)).join('・') + '</b>').join('、') +
+        '<br><button type="button" class="btn-small pl-apply" data-days="' + code + '">この有給を入れてカレンダーで見る</button></li>';
+    }).join('') + '</ul><p class="mini">' + (many ? '2人' : 'ふたり') + 'で1日ずつ取ると、有給2日と数えます。夜勤明けの日・勤務が入っていない日・休みの日に入れた休日出勤の日には、有給を入れない前提です。</p>';
+  }
+
+  /* ---------- 1年の重なり ---------- */
+  function renderOverlap(){
+    const W = ALL(), y = state.y, a = dn(y, 0, 1), b = dn(y, 11, 31);
+    $('ovTitle').textContent = W + '休みの日（' + y + '年）';
+    const all = offDays(a, b), we = [];
+    for(let n = a; n <= b; n++){ if(fromDn(n).w === 6 && allOff(n) && allOff(n + 1)) we.push(n); }
+    const r2 = runsIn(a, b).filter(r => r.e - r.s >= 1);
+    const hols = all.filter(n => HOLIDAYS[iso(n)] !== undefined);
+    let h = '<p class="ov-block">' + W + '休みの日：<b>' + all.length + '日</b></p>' +
+      '<p class="ov-block">' + (state.people.length >= 3 ? state.people.length + '人' : 'ふたり') + 'そろって土日休みの週末：<b>' + we.length + '回</b>' + (we.length ? '<span class="ov-list">' + we.map(pair).join('、') + '</span>' : '') + '</p>' +
+      '<p class="ov-block">2日以上続けて' + W + '休み：<b>' + r2.length + '回</b>' + (r2.length ? '<span class="ov-list">' + r2.map(r => span(r.s, r.e) + '（' + (r.e - r.s + 1) + '日間）').join('<br>') + '</span>' : '') + '</p>';
+    if(HOLIDAY_YEARS.indexOf(y) >= 0) h += '<p class="ov-block">祝日と重なる' + W + '休み：<b>' + hols.length + '日</b>' + (hols.length ? '<span class="ov-list">' + hols.map(n => md(n) + ' ' + HOLIDAYS[iso(n)]).join('、') + '</span>' : '') + '</p>';
+    else h += '<p class="ov-block" style="color:var(--ink-soft);font-size:13px;">' + NO_HOLIDAY_TEXT + '</p>';
+    h += '<p class="mini">年をまたいで続く休みは、つながっている日まで書いています。表示する年は、上のカレンダーで切り替えられます。</p>';
+    $('ovBody').innerHTML = h;
+  }
+  function renderExportScope(){
+    $('exportScope').textContent = '印刷・画像・文字のコピーは、表示中の' + state.y + '年' + (state.m + 1) + '月（年間の印刷は' + state.y + '年）が対象です。年や月は上のカレンダーで切り替えられます。';
+  }
+  function renderAll(){
+    const a = document.activeElement, typing = !!(a && a.classList && a.classList.contains('f-name'));
+    renderSetup(); if(!typing) renderStatus(); renderViewer(); renderPL(); renderOverlap(); renderExportScope();
+    $('addBtn').hidden = state.people.length >= MAX_PEOPLE;
+    $('icsHelp1').textContent = ALL() + '休みの日が、終日の予定として入ります（続いている日は、まとめて1件）。それぞれの勤務は入りません。';
+    $('akeOff').checked = state.akeOff;
+    renderSaveNote(); scheduleHash();
+  }
+
+  /* ---------- 文字でコピー ---------- */
+  function monthText(){
+    const y = state.y, m = state.m, a = dn(y, m, 1), b = dn(y, m + 1, 0), list = offDays(a, b), W = ALL();
+    const lines = ['【' + y + '年' + (m + 1) + '月　' + W + '休みの日】', state.people.map(p => p.name + '：' + descOf(p)).join('／'),
+      list.length ? list.map(dayWithDow).join('・') + '（' + list.length + '日）' : 'なし', '', '日ごとの勤務：'];
+    for(let n = a; n <= b; n++){
+      const hol = HOLIDAYS[iso(n)];
+      lines.push(md(n) + ' ' + state.people.map(p => { const t = typeAt(p, n); return p.name + ' ' + (t ? t.name : '未入力'); }).join('／') + (allOff(n) ? '　◎' : '') + (hol ? '　※' + hol : ''));
+    }
+    lines.push('', '◎＝' + W + '休み');
+    const hg = holGap(a, b);
+    if(hg.length) lines.push(holGapText(hg));
+    return lines.join('\n');
+  }
+
+  /* ---------- .ics（みんな休みの日を、終日の予定にする） ---------- */
+  function icsEscape(s){ return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  function icsFold(line){
+    let out = '', bytes = 0;
+    for(const ch of line){
+      const cp = ch.codePointAt(0), b = cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+      if(bytes + b > 73){ out += '\r\n '; bytes = 1; }
+      out += ch; bytes += b;
+    }
+    return out;
+  }
+  function hash32(str){ let h = 5381; for(let i = 0; i < str.length; i++){ h = ((h << 5) + h + str.charCodeAt(i)) >>> 0; } return h.toString(36); }
+  function buildICS(a, b, fromRunStart){
+    if(fromRunStart && allOff(a)) a = runAt(a).s;   // 今日をふくむ連休は、その最初の日から入れる（何度作っても同じ中身・同じ UID）
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z'), W = ALL();
+    const names = state.people.map(p => p.name).join('・');
+    const seed = hash32(names);
+    const L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//yohaku-no-jikkenshitsu//futari-yasumi//JA', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:' + icsEscape(W + '休み')];
+    let count = 0;
+    runsIn(a, b).forEach(r => {
+      const s = Math.max(r.s, a), e = Math.min(r.e, b);
+      // UID は続きのほんとうの最初の日で決める。期間の端で切った予定は、切ったあとの最初と最後の日も入れて別の UID にする（年のファイルどうしで重ならないように）
+      const uid = compact(r.s) + ((s > r.s || e < r.e) ? '-' + compact(s) + '-' + compact(e) : '');
+      L.push('BEGIN:VEVENT', 'UID:futari-' + seed + '-' + uid + '@yohaku-no-jikkenshitsu', 'DTSTAMP:' + stamp,
+             'DTSTART;VALUE=DATE:' + compact(s), 'DTEND;VALUE=DATE:' + compact(e + 1),
+             'SUMMARY:' + icsEscape(W + '休み（' + names + '）'), 'TRANSP:TRANSPARENT', 'END:VEVENT');
+      count++;
+    });
+    L.push('END:VCALENDAR');
+    return {text: L.map(icsFold).join('\r\n') + '\r\n', count: count, a: a};
+  }
+  function download(blob, filename){
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 4000);
+  }
+
+  /* ---------- 画像（canvas） ---------- */
+  const FONT_M = "'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho','Noto Serif CJK JP',serif";
+  const FONT_G = "'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic','Noto Sans CJK JP',Meiryo,sans-serif";
+  const C_ACC = '#8B5A6B';
+  function rr(ctx, x, y, w, h, r){
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+  }
+  function fitText(ctx, text, maxW){
+    if(ctx.measureText(text).width <= maxW) return text;
+    const ch = Array.from(text);
+    while(ch.length > 1 && ctx.measureText(ch.join('') + '…').width > maxW) ch.pop();
+    return ch.join('') + '…';
+  }
+  function drawMonthImage(){
+    const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d'); if(!ctx) throw new Error('canvas');
+    const M = 56, inner = W - M * 2, y = state.y, m = state.m, P = state.people, WD = ALL();
+    ctx.fillStyle = '#F6F8F1'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = C_INK; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '700 76px ' + FONT_M; ctx.fillText(y + '年' + (m + 1) + '月', M, 124);
+    ctx.font = '500 28px ' + FONT_G; ctx.fillStyle = C_NUM;
+    ctx.fillText(fitText(ctx, P.map(p => p.name + '：' + descOf(p)).join('／'), inner), M, 178);
+    // 凡例：みんな休み／段の順
+    ctx.textBaseline = 'middle';
+    let lx = M; const ly = 226;
+    ctx.fillStyle = C_ACC; rr(ctx, lx, ly - 15, 30, 30, 7); ctx.fill();
+    ctx.fillStyle = C_INK; ctx.font = '700 26px ' + FONT_G; ctx.fillText(WD + '休み', lx + 40, ly + 1);
+    lx += 40 + ctx.measureText(WD + '休み').width + 30;
+    ctx.fillStyle = C_NUM; ctx.font = '500 24px ' + FONT_G;
+    const pos = ['上', P.length >= 3 ? 'まん中' : '下', '下'];
+    ctx.fillText(fitText(ctx, '各日の' + P.map((p, i) => pos[i] + '＝' + p.name).join('、'), W - M - lx), lx, ly + 1);
+    // 1か月の枠
+    const top = 268, first = dn(y, m, 1), w0 = fromDn(first).w, days = fromDn(dn(y, m + 1, 0)).d;
+    const rows = Math.ceil((w0 + days) / 7), gap = 10, dowH = 40, cw = (inner - gap * 6) / 7;
+    const ch = Math.min(178, Math.floor((H - 130 - top - dowH - gap * (rows - 1)) / rows));
+    DOW.forEach((d, i) => {
+      ctx.font = '500 24px ' + FONT_G; ctx.textAlign = 'center';
+      ctx.fillStyle = i === 0 ? C_RED : i === 6 ? C_BLUE : C_NUM;
+      ctx.fillText(d, M + i * (cw + gap) + cw / 2, top + dowH / 2);
+    });
+    for(let d = 1; d <= days; d++){
+      const n = first + d - 1, col = (w0 + d - 1) % 7, row = Math.floor((w0 + d - 1) / 7), hol = HOLIDAYS[iso(n)], all = allOff(n);
+      const cx = M + col * (cw + gap), cy = top + dowH + row * (ch + gap);
+      ctx.fillStyle = all ? C_ACC : '#FFFFFF'; rr(ctx, cx, cy, cw, ch, 16); ctx.fill();
+      ctx.strokeStyle = all ? C_ACC : '#D6D9CC'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.textAlign = 'left'; ctx.font = ((col === 0 || hol) ? '700 ' : '500 ') + '26px ' + FONT_G;
+      ctx.fillStyle = all ? '#FFFFFF' : (col === 0 || hol) ? C_RED : col === 6 ? C_BLUE : C_NUM;
+      ctx.fillText(String(d), cx + 10, cy + 20);
+      if(hol){ ctx.font = '500 15px ' + FONT_G; ctx.textAlign = 'right'; ctx.fillText(fitText(ctx, hol, cw - 52), cx + cw - 8, cy + 20); }
+      const bandTop = cy + 40, bandH = (ch - 46 - (P.length - 1) * 4) / P.length;
+      P.forEach((p, i) => {
+        const t = typeAt(p, n), by = bandTop + i * (bandH + 4);
+        if(t && !all){ ctx.fillStyle = t.bg; rr(ctx, cx + 6, by, cw - 12, bandH, 6); ctx.fill(); if(t.kind === 'rest'){ ctx.strokeStyle = '#D6D9CC'; ctx.lineWidth = 1.5; ctx.stroke(); } }
+        ctx.textAlign = 'center'; ctx.fillStyle = all ? '#FFFFFF' : t ? t.fg : '#9AA094';
+        const lab = t ? t.label : '・';
+        ctx.font = '700 ' + Math.min(bandH * 0.62, lab.length > 1 ? 24 : 32) + 'px ' + FONT_M;
+        ctx.fillText(lab, cx + cw / 2, by + bandH / 2 + 1);
+      });
+    }
+    const list = offDays(dn(y, m, 1), dn(y, m + 1, 0)), hg = holGap(dn(y, m, 1), dn(y, m + 1, 0));
+    if(hg.length){ ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.fillStyle = '#8A8F84'; ctx.font = '500 19px ' + FONT_G; ctx.fillText(fitText(ctx, holGapText(hg), inner), M, H - 24); }
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'right'; ctx.fillStyle = '#8A8F84'; ctx.font = '500 20px ' + FONT_G;
+    const mark = 'ふたりの休み合わせカレンダー'; ctx.fillText(mark, W - M, H - 62);
+    const markW = ctx.measureText(mark).width;
+    ctx.textAlign = 'left'; ctx.fillStyle = C_INK; ctx.font = '700 34px ' + FONT_M;
+    ctx.fillText(fitText(ctx, WD + '休み ' + list.length + '日' + (list.length ? '（土日・祝日 ' + list.filter(isWeekendOrHol).length + '日）' : ''), inner - markW - 30), M, H - 62);
+    return c;
+  }
+  let ovUrl = null, ovReturn = null;
+  function openOverlay(){ ovReturn = document.activeElement; $('overlayBox').hidden = false; document.body.style.overflow = 'hidden'; $('ovClose').focus(); }
+  function closeOverlay(){
+    if($('overlayBox').hidden) return;
+    $('overlayBox').hidden = true; document.body.style.overflow = '';
+    if(ovReturn && ovReturn.focus) ovReturn.focus();
+    ovReturn = null;
+  }
+  function showImage(){
+    flash('feedback', '画像を作っています…');
+    const fail = () => flash('feedback', '画像を作れませんでした。Safari や Chrome で開き直してお試しください。');
+    const show = (url, name) => { $('ovImg').src = url; $('ovDl').href = url; $('ovDl').setAttribute('download', name); openOverlay(); flash('feedback', ''); };
+    const go = () => {
+      try {
+        const canvas = drawMonthImage(), name = 'futari-yasumi-' + state.y + '-' + pad(state.m + 1) + '.png';
+        if(!canvas.toBlob){ show(canvas.toDataURL('image/png'), name); return; }
+        canvas.toBlob(blob => {
+          try {
+            if(!blob){ fail(); return; }
+            if(ovUrl) URL.revokeObjectURL(ovUrl);
+            ovUrl = URL.createObjectURL(blob);
+            show(ovUrl, name);
+          } catch(e){ fail(); }
+        }, 'image/png');
+      } catch(e){ fail(); }
+    };
+    let ready = Promise.resolve();
+    try {
+      if(document.fonts && document.fonts.load) ready = Promise.all([document.fonts.load("700 40px 'Zen Old Mincho'", '休日勤夜有明年月'), document.fonts.load("500 20px 'Zen Kaku Gothic New'", 'ふたりとも休み上下')]).catch(() => null);
+    } catch(e){ ready = Promise.resolve(); }
+    Promise.race([ready, new Promise(res => setTimeout(res, 2500))]).then(go, go);
+  }
+
+  /* ---------- 印刷 ---------- */
+  let printKind = null;   // ボタンで選んだ印刷（null＝ブラウザのメニューから。表示に合わせる）
+  function psGrid(y, m, bands){
+    const first = dn(y, m, 1), w0 = fromDn(first).w, days = fromDn(dn(y, m + 1, 0)).d;
+    let h = '<div class="ps-grid">';
+    DOW.forEach((d, i) => { h += '<div class="ps-dow' + (i === 0 ? ' sun' : i === 6 ? ' sat' : '') + '">' + d + '</div>'; });
+    for(let i = 0; i < w0; i++) h += '<div class="ps-c out"></div>';
+    for(let d = 1; d <= days; d++){
+      const n = first + d - 1, wd = (w0 + d - 1) % 7, hol = HOLIDAYS[iso(n)], all = allOff(n);
+      h += '<div class="ps-c' + (wd === 0 ? ' sun' : wd === 6 ? ' sat' : '') + (hol ? ' hol' : '') + (all ? ' both' : '') + '">';
+      if(bands){
+        h += '<span class="d">' + d + '</span>' + (hol ? '<span class="h">' + esc(hol) + '</span>' : '') +
+          state.people.map(p => { const t = typeAt(p, n); return '<span class="b" style="' + (t ? styleOf(t) : '') + '"><small>' + esc(clip(p.name, 2)) + '</small>' + (t ? t.label : '・') + '</span>'; }).join('');
+      } else h += d;
+      h += '</div>';
+    }
+    return h + '</div>';
+  }
+  function buildPrintSheet(kind){
+    const sheet = $('printSheet'), W = ALL();
+    const hg = kind === 'month' ? holGap(dn(state.y, state.m, 1), dn(state.y, state.m + 1, 0)) : holGap(dn(state.y, 0, 1), dn(state.y, 11, 31));
+    const sub = esc(state.people.map(p => p.name + '：' + descOf(p)).join('／') + (hg.length ? '　' + holGapText(hg) : ''));
+    const legend = '<div class="ps-legend"><span><i class="both"></i>' + W + '休み</span></div>';
+    let h;
+    if(kind === 'month'){
+      const list = offDays(dn(state.y, state.m, 1), dn(state.y, state.m + 1, 0));
+      h = '<div class="ps-sheet ps-month"><div class="ps-head"><p class="ps-title">' + state.y + '年' + (state.m + 1) + '月　' + W + '休みの日</p>' +
+          '<div class="ps-row"><p class="ps-sub">' + sub + '　／　' + W + '休み ' + list.length + '日</p>' + legend + '</div></div>' + psGrid(state.y, state.m, true) + '</div>';
+    } else {
+      const a = dn(state.y, 0, 1), b = dn(state.y, 11, 31), all = offDays(a, b);
+      let we = 0; for(let n = a; n <= b; n++){ if(fromDn(n).w === 6 && allOff(n) && allOff(n + 1)) we++; }
+      h = '<div class="ps-sheet"><div class="ps-head"><p class="ps-title">' + state.y + '年　' + W + '休みの日</p>' +
+          '<div class="ps-row"><p class="ps-sub">' + sub + '</p>' + legend + '</div></div><div class="ps-year">';
+      for(let m = 0; m < 12; m++){ const c = offDays(dn(state.y, m, 1), dn(state.y, m + 1, 0)).length; h += '<div class="ps-m"><h3>' + (m + 1) + '月<small>' + c + '日</small></h3>' + psGrid(state.y, m, false) + '</div>'; }
+      h += '</div><div class="ps-foot"><span>年間：' + W + '休み ' + all.length + '日／' + (state.people.length >= 3 ? state.people.length + '人' : 'ふたり') + 'そろって土日休みの週末 ' + we + '回</span><span>勤務の形から作った目安です。実際の勤務を優先してください。</span></div></div>';
+    }
+    sheet.innerHTML = h;
+  }
+  function doPrint(kind){
+    printKind = kind; buildPrintSheet(kind);
+    if(typeof window.print !== 'function'){ flash('feedback', 'このブラウザでは印刷を呼び出せません。ブラウザのメニューから印刷してください。'); return; }
+    try { window.print(); } catch(e){ flash('feedback', '印刷を始められませんでした。ブラウザのメニューから印刷してください。'); }
+  }
+  window.addEventListener('beforeprint', () => buildPrintSheet(printKind || (state.view === 'month' ? 'month' : 'year')));
+  window.addEventListener('afterprint', () => { printKind = null; });
+
+  /* ---------- 操作（勤務の入力） ---------- */
+  const people = $('people');
+  const idxOf = el => { const c = el.closest('.person'); return c ? +c.dataset.i : -1; };
+  const update = () => changed();
+  people.addEventListener('change', e => {
+    const el = e.target, i = idxOf(el); if(i < 0) return;
+    const p = state.people[i];
+    if(el.classList.contains('f-kind')){
+      const prev = p.kind, snap = snapshot(), nOver = Object.keys(p.over).length;
+      applyKind(p, el.value);
+      if(el.value === 'cc'){ const d = cardOf(i).querySelector('.c-editor'); if(d) d.open = true; }
+      update();
+      const o = {focus:false, keep:el}, again = '勤務の形でもう一度選ぶと戻ります（このページを開いているあいだ）。';
+      if(el.value === 'mn' && prev !== 'mn') toast(p.name + 'のシフト表は、下のカレンダーで日ごとに入れます。', '入れる', () => openPaint(i), 12000, o);
+      else if(prev === 'mn' && nOver) toast(p.name + '：シフト表で入れた' + nOver + '日は、残してあります。' + again, '取り消す', () => restore(snap), 0, o);
+      else if(prev === 'cc' && el.value !== 'cc') toast(p.name + '：作った並び（並びを自分で作る・直す）は、残してあります。' + again, '取り消す', () => restore(snap), 0, o);
+      else if(prev === 'cw' && el.value !== 'cw') toast(p.name + '：選んだ休みの曜日は、残してあります。' + again, '取り消す', () => restore(snap), 0, o);
+      return;
+    } else if(el.classList.contains('f-base')){
+      const n = parseISO(el.value); if(n === null) return;   // 打っている途中の日付では何もしない
+      p.base = n; update();
+    } else if(el.classList.contains('f-nen')){
+      p.nen = el.checked; update();
+    }
+    else if(el.classList.contains('f-hol')){
+      p.hol = el.checked; p.kind = 'cw'; update();
+    }
+  });
+  people.addEventListener('focusout', e => {
+    const el = e.target, i = idxOf(el); if(i < 0 || !state.people[i]) return;
+    if(el.classList.contains('f-base') && parseISO(el.value) === null) el.value = iso(state.people[i].base);
+    if(el.classList.contains('f-name')){
+      el.value = state.people[i].name;
+      if(nameTimer){ nameLight(); nameRender(400); }   // 文字の部分はすぐ、ボタンを含む部分は押し終わってから
+      else renderStatus();
+    }
+  });
+  people.addEventListener('click', e => {
+    const i = idxOf(e.target); if(i < 0) return;
+    const p = state.people[i];
+    const pick = e.target.closest('.s-pick button[data-k]');
+    if(pick){
+      p.want = +pick.dataset.k; fixPos(p); update();
+      const again = cardOf(i).querySelector('.s-pick button[data-k="' + p.pos + '"]'); if(again) again.focus();
+      return;
+    }
+    const add = e.target.closest('button[data-add]');
+    if(add){
+      if(p.cycle.length >= MAX_CYCLE) return;
+      p.cycle += add.dataset.add; p.kind = 'cc'; fixPos(p); update(); return;
+    }
+    if(e.target.closest('.c-bs')){ if(!p.cycle.length) return; p.cycle = p.cycle.slice(0, -1); p.kind = 'cc'; fixPos(p); update(); return; }
+    if(e.target.closest('.c-clr')){
+      if(!p.cycle.length) return;
+      const snap = snapshot();
+      p.cycle = ''; p.want = 0; p.kind = 'cc'; fixPos(p); update();
+      toast(p.name + 'の並びを全部消しました。', '取り消す', () => restore(snap), 0, {back: cardOf(i) && cardOf(i).querySelector('.c-editor > summary')}); return;
+    }
+    const wb = e.target.closest('.wk button[data-w]');
+    if(wb){
+      const w = +wb.dataset.w;
+      p.mask = p.mask.slice(0, w) + (p.mask.charAt(w) === '1' ? '0' : '1') + p.mask.slice(w + 1); p.kind = 'cw'; update();
+      const again = cardOf(i).querySelector('.wk button[data-w="' + w + '"]'); if(again) again.focus();
+      return;
+    }
+    if(e.target.closest('.m-go')){ openPaint(i); return; }
+    if(e.target.closest('.p-remove')){
+      const snap = snapshot();
+      if(state.brushWho === i){ state.brush = null; state.brushWho = 0; }
+      state.people.splice(i, 1); if(state.brushWho >= state.people.length) state.brushWho = 0;
+      buildPeople(); update();
+      toast('3人目を外しました。', '取り消す', () => restore(snap), 0, {back: $('addBtn')});
+    }
+  });
+  // 呼び名：打つたびに全部を描き直すと重く、読み上げも毎回入るので、打ち終わって1.2秒後に描き直す（今日の状況は欄から出たときに）。
+  // 描き直しはボタンを作り直すので、マウスやタッチを押している最中には行わない（押したボタンが消えて、押しても効かなくなるため）。
+  let nameTimer = null, pointerDown = false;
+  document.addEventListener('pointerdown', () => { pointerDown = true; }, true);
+  document.addEventListener('pointerup', () => { setTimeout(() => { pointerDown = false; }, 0); }, true);
+  document.addEventListener('pointercancel', () => { pointerDown = false; }, true);
+  function nameRender(wait){
+    clearTimeout(nameTimer);
+    nameTimer = setTimeout(function go(){
+      if(pointerDown){ nameTimer = setTimeout(go, 300); return; }
+      nameTimer = null; urlDirty = true; renderAll();   // 取り消しの知らせは消さない（名前は、知らせより前に打ったもの）
+    }, wait);
+  }
+  function nameInput(el, composing){
+    const i = idxOf(el); if(i < 0 || !el.classList.contains('f-name') || !state.people[i]) return;
+    if(!composing && graphemes(el.value).length > 8) el.value = clip(el.value, 8);   // 8文字を超えた分は欄からも消す（変換中はさわらない）
+    state.people[i].name = clip(clean(el.value), 8) || DEFAULT_NAMES[i];
+    if(toastAction) hideToast();   // 知らせのあとで名前を変えたら、その取り消しは出さない（ほかの変更と同じ）
+    nameRender(1200);
+  }
+  // 欄から出たとき：ボタンを作り直さない部分（見出し・今日の状況・凡例・だれの段のボタンの文字・URL）だけ、すぐ書き換える
+  function nameLight(){
+    state.people.forEach((p, i) => { const c = cardOf(i); if(c) c.querySelector('.p-name').textContent = p.name; });
+    renderStatus(); renderLegend();
+    $('brushWho').querySelectorAll('button[data-who]').forEach(b => { const p = state.people[+b.dataset.who]; if(p) b.textContent = p.name; });
+    urlDirty = true; $('hashNote').hidden = true; renderSaveNote(); scheduleHash();
+  }
+  people.addEventListener('input', e => nameInput(e.target, e.isComposing));
+  people.addEventListener('compositionend', e => nameInput(e.target, false));
+
+
+  /* ---------- 操作（そのほか） ---------- */
+  $('toastBtn').addEventListener('keydown', e => { if(e.repeat && (e.key === 'Enter' || e.key === ' ')) e.preventDefault(); });   // 押しっぱなしのくり返しは受けない
+  $('toastBtn').addEventListener('click', () => {
+    if(performance.now() - toastAt < 600) return;   // 出た直後の押し（Enter の2回押しなど）は受けない
+    const a = toastAction; hideToast(); if(a) a();
+  });
+  $('toastMsg').addEventListener('click', hideToast);
+  $('addBtn').addEventListener('click', () => {
+    if(state.people.length >= MAX_PEOPLE) return;
+    state.people.push(newPerson(state.people.length, 'sdh'));
+    buildPeople(); update();
+    const c = cardOf(state.people.length - 1); if(c){ c.scrollIntoView({block:'start'}); const s = c.querySelector('.f-name'); if(s) s.focus(); }
+  });
+  $('akeOff').addEventListener('change', e => { state.akeOff = e.target.checked; update(); });
+  function openPaint(i){
+    state.view = 'month'; state.brushWho = i;
+    const p = state.people[i];
+    $('brushBox').open = true;
+    if(p.mode === 'manual' && state.brush === null) state.brush = 'r';
+    renderAll();
+    $('viewer').scrollIntoView({block:'start'});
+  }
+  document.querySelector('.tabs').addEventListener('click', e => {
+    const b = e.target.closest('button[data-view]'); if(!b) return;
+    state.view = b.dataset.view; renderViewer(); renderOverlap(); renderExportScope();
+  });
+  function step(dir){
+    let y = state.y, m = state.m;
+    if(state.view === 'year'){ y += dir; }
+    else { const t = m + dir; y += Math.floor(t / 12); m = mod(t, 12); }
+    if(y < MIN_YEAR || y > MAX_YEAR) return;
+    state.y = y; state.m = m;
+    renderViewer(); renderOverlap(); renderExportScope();
+  }
+  $('prevBtn').addEventListener('click', () => step(-1));
+  $('nextBtn').addEventListener('click', () => step(1));
+  $('todayBtn').addEventListener('click', () => { const t = fromDn(todayDn()); state.y = t.y; state.m = t.m; renderViewer(); renderOverlap(); renderExportScope(); });
+
+  $('brushBox').addEventListener('toggle', () => { if(!$('brushBox').open) state.brush = null; renderViewer(); });
+  $('brushWho').addEventListener('click', e => {
+    const b = e.target.closest('button[data-who]'); if(!b) return;
+    state.brushWho = +b.dataset.who; state.brush = null; renderViewer();
+    const again = $('brushWho').querySelector('button[data-who="' + state.brushWho + '"]'); if(again) again.focus();
+  });
+  $('brushes').addEventListener('click', e => {
+    const b = e.target.closest('button[data-id]'); if(!b) return;
+    state.brush = state.brush === b.dataset.id ? null : b.dataset.id;
+    renderViewer();
+    const again = $('brushes').querySelector('button[data-id="' + b.dataset.id + '"]'); if(again) again.focus();
+  });
+  $('overClear').addEventListener('click', () => {
+    const snap = snapshot(), p = state.people[state.brushWho];
+    p.over = {}; update();
+    toast(p.name + 'の' + (p.mode === 'manual' ? '入れた日を消しました。' : '変えた日をすべて元に戻しました。'), '取り消す', () => restore(snap), 0, {back: $('brushBox').querySelector('summary')});
+  });
+  $('calArea').addEventListener('click', e => {
+    const ym = e.target.closest('button.ym');
+    if(ym){
+      state.m = +ym.dataset.m; state.view = 'month'; renderViewer(); renderOverlap(); renderExportScope();
+      $('viewer').scrollIntoView({block:'start'});
+      return;
+    }
+    const c = e.target.closest('button.cell[data-n]'); if(!c || state.brush === null) return;
+    const n = +c.dataset.n, p = state.people[state.brushWho], base = baseTypeAt(p, n);
+    if(state.brush === 'x' || (base && base.id === state.brush)){
+      delete p.over[n];
+    } else {
+      if(p.over[n] === undefined && Object.keys(p.over).length >= MAX_OVER){ $('brushHint').textContent = '1人あたり ' + MAX_OVER + '日までです。'; return; }
+      p.over[n] = state.brush;
+    }
+    update();
+    const again = $('calArea').querySelector('button.cell[data-n="' + n + '"]'); if(again) again.focus();
+  });
+  $('plB').addEventListener('change', e => { state.plB = Math.min(3, Math.max(1, +e.target.value || 1)); renderPL(); });
+  $('plBody').addEventListener('click', e => {
+    const b = e.target.closest('button.pl-apply'); if(!b) return;
+    const recs = b.dataset.days.split(';').map(rec => { const f = rec.split(':'); return {n:+f[0], who:f[1].split(',').map(Number)}; });
+    const per = state.people.map((p, i) => recs.filter(r => r.who.indexOf(i) >= 0).map(r => r.n));
+    const full = state.people.filter((p, i) => per[i].filter(n => p.over[n] === undefined).length + Object.keys(p.over).length > MAX_OVER);
+    if(full.length){ toast(full.map(p => p.name).join('・') + 'の「その日だけ変える」が ' + MAX_OVER + '日をこえるので、入れられません。', '', null, 8000); return; }
+    const snap = snapshot();
+    recs.forEach(r => r.who.forEach(i => { if(state.people[i]) state.people[i].over[r.n] = 'y'; }));
+    const c = fromDn(recs[0].n); state.view = 'month'; state.y = c.y; state.m = c.m;
+    update();
+    const cell = $('calArea').querySelector('.cell[data-n="' + recs[0].n + '"]');
+    if(cell) cell.scrollIntoView({block:'center'}); else $('viewer').scrollIntoView({block:'start'});
+    const Y0 = fromDn(todayDn()).y;
+    toast(state.people.map((p, i) => per[i].length ? p.name + '：' + per[i].map(n => mdY(n, Y0)).join('・') : '').filter(Boolean).join('、') + ' に有給を入れました。', '取り消す', () => restore(snap), 0, {back: $('plTitle')});
+  });
+  window.addEventListener('resize', () => { if(state.view === 'year') $('app').classList.toggle('year-wide', window.innerWidth >= 760); });
+
+  $('printYearBtn').addEventListener('click', () => doPrint('year'));
+  $('printMonthBtn').addEventListener('click', () => doPrint('month'));
+  $('imgMonthBtn').addEventListener('click', showImage);
+  $('copyMonthBtn').addEventListener('click', () => copyText(monthText(), state.y + '年' + (state.m + 1) + '月の休みと勤務をコピーしました。'));
+  $('copyUrlBtn').addEventListener('click', () => {
+    const h = writeHash();
+    copyText(location.href.split('#')[0] + h, 'この設定のURLをコピーしました。');
+    savedHash = h; changeNoted = false; renderSaveNote();
+  });
+  $('icsBtn').addEventListener('click', () => {
+    const mode = $('icsRange').value, t0 = todayDn(), ty = fromDn(t0).y;
+    let a, b;
+    if(mode === 'year'){ a = dn(state.y, 0, 1); b = dn(state.y, 11, 31); }
+    else if(mode === 'this'){ a = t0; b = dn(ty, 11, 31); }
+    else { a = t0; b = dn(ty + 1, 11, 31); }
+    try {
+      const r = buildICS(a, b, mode !== 'year');
+      if(!r.count){ flash('icsFeedback', 'この期間には、' + ALL() + '休みの日がありません。'); return; }
+      download(new Blob([r.text], {type:'text/calendar;charset=utf-8'}), 'futari-yasumi-' + compact(a) + '-' + compact(b) + '.ics');
+      const c0 = fromDn(a), c1 = fromDn(b);
+      const hg = holGap(r.a, b);
+      flash('icsFeedback', c0.y + '年' + (c0.m + 1) + '月' + c0.d + '日〜' + c1.y + '年' + (c1.m + 1) + '月' + c1.d + '日のファイルを作りました（予定 ' + r.count + '件）。' +
+        (r.a < a ? '今日をふくむ連休は、その最初の日（' + mdY(r.a, c0.y) + '）から入れています。' : '') + (hg.length ? holGapText(hg) : ''));
+    } catch(e){
+      flash('icsFeedback', 'ファイルを作れませんでした。Safari や Chrome で開き直してお試しください。');
+    }
+  });
+  $('ovClose').addEventListener('click', closeOverlay);
+  $('overlayBox').addEventListener('click', e => { if(e.target === $('overlayBox')) closeOverlay(); });
+  $('overlayBox').addEventListener('keydown', e => {
+    if(e.key !== 'Tab') return;
+    const f = [$('ovDl'), $('ovClose')], i = f.indexOf(document.activeElement);
+    e.preventDefault(); f[(i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus();
+  });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeOverlay(); });
+  window.addEventListener('hashchange', () => {
+    if(location.hash === encodeState()) return;   // 自分で書いたときは何もしない
+    clearTimeout(hashTimer); hashTimer = null; clearTimeout(nameTimer); nameTimer = null;
+    hideToast();
+    const ok = applyHash(location.hash);
+    showHashNote(ok);
+    buildPeople();
+    savedHash = ok ? encodeState() : null; changeNoted = false; urlDirty = false;
+    renderAll();
+  });
+
+  // 日付が変わったら（夜をまたいで開いたままのとき）、「今日」を取り直す。
+  let midTimer = null;
+  function dayTick(){
+    const t = todayDn();
+    if(t !== lastToday){ lastToday = t; renderAll(); }
+    clearTimeout(midTimer);
+    const n = new Date(), next = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1, 0, 0, 2);
+    midTimer = setTimeout(dayTick, Math.min(next - n, 2147483647));
+  }
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) dayTick(); });
+  window.addEventListener('pageshow', dayTick);
+  window.addEventListener('focus', dayTick);
+
+  /* ---------- はじめ ---------- */
+  if(location.hash.length > 1){
+    const ok = applyHash(location.hash);
+    showHashNote(ok);
+    if(ok) savedHash = encodeState();
+  }
+  buildPeople(); renderAll(); dayTick();
+})();
+</script>
+</body>
+</html>
